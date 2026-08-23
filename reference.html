@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WOZ API referentie: endpoints, velden en foutcodes</title>
+<meta name="description" content="Volledige referentie van de WOZ API: de vier endpoints, alle responsevelden met hun type, de foutvorm, limieten en de creditregels.">
+<link rel="canonical" href="https://wozapi.github.io/reference.html">
+<link rel="stylesheet" href="/assets/docs.css">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WOZ API referentie">
+<meta property="og:description" content="De vier endpoints, alle responsevelden met hun type, de foutvorm en de limieten.">
+<meta property="og:url" content="https://wozapi.github.io/reference.html">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"TechArticle","headline":"WOZ API referentie: endpoints, velden en foutcodes","description":"Volledige referentie van de WOZ API: endpoints, responsevelden, foutvorm, limieten en creditregels.","url":"https://wozapi.github.io/reference.html","inLanguage":"nl-NL","proficiencyLevel":"Expert","author":{"@type":"Organization","name":"WozApi","url":"https://woz-api.nl"},"about":{"@type":"WebAPI","name":"WOZ API","documentation":"https://wozapi.github.io/reference.html","provider":{"@type":"Organization","name":"WozApi","url":"https://woz-api.nl"}}}
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">wozapi<span aria-hidden="true">/</span>docs</a>
+    <nav aria-label="Documentatie">
+      <a href="/">Overzicht</a>
+      <a href="/getting-started.html">Aan de slag</a>
+      <a href="/reference.html" aria-current="page">Referentie</a>
+      <a href="/clients.html">Clients</a>
+      <a href="https://woz-api.nl">woz-api.nl</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<h1>Referentie</h1>
+<p class="lead">Basis-URL <code>https://woz-api.nl</code>. Alles is GET, alles geeft JSON.
+De gezaghebbende machineleesbare definitie is de
+<a href="https://woz-api.nl/swagger">OpenAPI-specificatie</a>; deze pagina is de leesbare versie
+daarvan.</p>
+
+<h2>Authenticatie</h2>
+<p>Elke call vraagt een sleuteI in een header. Beide vormen werken:
+<code>X-Api-Key: {key}</code> of <code>Authorization: ApiKey {key}</code>. Sleutels maak je aan
+op <a href="https://woz-api.nl/ApiKeys">woz-api.nl/ApiKeys</a>.</p>
+<p>Zonder sleutel mag je 5 adressen per IP-adres opvragen, daarna volgt een 403.</p>
+
+<h2>Endpoints</h2>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Endpoint</th><th>Parameters</th><th>Wat het doet</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>GET /Api/Adres</code></td>
+      <td><code>adres</code> (verplicht), <code>geometrie</code></td>
+      <td>Zoekt op een vrij ingevoerd adres</td>
+    </tr>
+    <tr>
+      <td><code>GET /Api/Nummeraanduiding/{id}</code></td>
+      <td><code>id</code> (pad), <code>geometrie</code></td>
+      <td>Zoekt op een BAG-nummeraanduiding</td>
+    </tr>
+    <tr>
+      <td><code>GET /Api/AdresseerbaarObject/{id}</code></td>
+      <td><code>id</code> (pad), <code>geometrie</code></td>
+      <td>Zoekt op een verblijfsobject, ligplaats of standplaats</td>
+    </tr>
+    <tr>
+      <td><code>GET /Api/Credits</code></td>
+      <td>geen</td>
+      <td>Resterend creditsaldo van de sleutel</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p><code>geometrie=true</code> voegt de perceelgrenzen als GeoJSON toe, in WGS84. Standaard staat
+dat uit, omdat het de respons fors groter maakt. Zet het alleen aan als je echt gaat tekenen.</p>
+
+<h2>Respons</h2>
+<p>Alle drie de zoek-endpoints geven dezelfde structuur terug.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Veld</th><th>Type</th><th>Toelichting</th></tr></thead>
+  <tbody>
+    <tr><td><code>adres</code></td><td>string</td><td>Het genormaliseerde adres</td></tr>
+    <tr><td><code>bag</code></td><td>object</td><td>BAG-adresgegevens, zie hieronder</td></tr>
+    <tr><td><code>wozObject</code></td><td>object</td><td>WOZ-objectnummer en grondoppervlakte</td></tr>
+    <tr><td><code>woz</code></td><td>array</td><td>De vastgestelde waarden per peildatum</td></tr>
+    <tr><td><code>percelen</code></td><td>array</td><td>Actuele percelen uit de Kadastrale Kaart</td></tr>
+    <tr><td><code>kadastraleObjecten</code></td><td>array</td><td>De aanduiding waar de WOZ-registratie aan hangt</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout">
+  <strong>Twee kadastrale velden, en dat is geen fout.</strong> <code>percelen</code> is de
+  actuele perceelsituatie uit de open Kadastrale Kaart. <code>kadastraleObjecten</code> is de
+  aanduiding waaraan de WOZ-registratie hangt. Die kunnen verschillen, bijvoorbeeld na een
+  perceelsplitsing. Gebruik <code>percelen</code> voor oppervlakte en kaartwerk, en
+  <code>kadastraleObjecten</code> als je de WOZ-administratie wilt volgen.
+</div>
+
+<h3><code>woz</code></h3>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Veld</th><th>Type</th><th>Toelichting</th></tr></thead>
+  <tbody>
+    <tr><td><code>peildatum</code></td><td>string</td><td>Waardepeildatum, doorgaans 1 januari</td></tr>
+    <tr><td><code>vastgesteldeWaarde</code></td><td>integer</td><td>De WOZ-waarde in hele euro's</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Sorteer zelf op <code>peildatum</code> als je de meest recente waarde wilt; de volgorde van de
+reeks is geen contract.</p>
+
+<h3><code>bag</code></h3>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Veld</th><th>Type</th></tr></thead>
+  <tbody>
+    <tr><td><code>adresseerbaarobjectId</code></td><td>string</td></tr>
+    <tr><td><code>nummeraanduidingId</code></td><td>string</td></tr>
+    <tr><td><code>straatnaam</code></td><td>string</td></tr>
+    <tr><td><code>huisnummer</code></td><td>integer</td></tr>
+    <tr><td><code>postcode</code></td><td>string</td></tr>
+    <tr><td><code>woonplaatsnaam</code></td><td>string</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3><code>wozObject</code></h3>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Veld</th><th>Type</th><th>Toelichting</th></tr></thead>
+  <tbody>
+    <tr><td><code>wozobjectnummer</code></td><td>integer</td><td>Uniek nummer in de LV WOZ</td></tr>
+    <tr><td><code>grondoppervlakte</code></td><td>integer</td><td>In m², indien bekend</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3><code>percelen</code></h3>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Veld</th><th>Type</th><th>Toelichting</th></tr></thead>
+  <tbody>
+    <tr><td><code>aanduiding</code></td><td>string</td><td>Bijvoorbeeld <code>ASD04 F 1145</code></td></tr>
+    <tr><td><code>kadastraleGemeenteCode</code></td><td>string</td><td>AKR-code, bijvoorbeeld <code>ASD04</code></td></tr>
+    <tr><td><code>kadastraleGemeente</code></td><td>string</td><td>Naam van de kadastrale gemeente</td></tr>
+    <tr><td><code>kadastraleSectie</code></td><td>string</td><td>Sectieletter</td></tr>
+    <tr><td><code>perceelnummer</code></td><td>integer</td><td>Nummer binnen de sectie</td></tr>
+    <tr><td><code>oppervlakteM2</code></td><td>integer</td><td>Kadastrale grootte in m²</td></tr>
+    <tr><td><code>soortGrootte</code></td><td>string</td><td>Of de grootte exact of geschat is</td></tr>
+    <tr><td><code>perceelId</code></td><td>string</td><td>Identificatie van het perceel</td></tr>
+    <tr><td><code>geometrie</code></td><td>object</td><td>GeoJSON, alleen met <code>geometrie=true</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Fouten</h2>
+<p>Elke fout uit de API zelf heeft deze vorm:</p>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Veld</th><th>Type</th><th>Toelichting</th></tr></thead>
+  <tbody>
+    <tr><td><code>fout</code></td><td>string</td><td>Korte omschrijving</td></tr>
+    <tr><td><code>code</code></td><td>string</td><td>Machineleesbare code</td></tr>
+    <tr><td><code>status</code></td><td>integer</td><td>De HTTP-status</td></tr>
+    <tr><td><code>detail</code></td><td>string</td><td>Wat er precies misging</td></tr>
+    <tr><td><code>traceId</code></td><td>string</td><td>Vermeld dit bij support</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Een 400 door modelvalidatie komt van ASP.NET zelf en heeft de
+<code>ValidationProblemDetails</code>-vorm met een <code>errors</code>-object. Schrijf je
+foutafhandeling daarom op de HTTP-status en niet op de aanwezigheid van <code>fout</code>.</p>
+
+<h2>Limieten en credits</h2>
+<ul>
+  <li>1 credit is 1 uniek adres. Hetzelfde adres binnen 7 dagen opnieuw opvragen is gratis; de
+    request wordt wel echt uitgevoerd, het is een kortingsregel en geen cache.</li>
+  <li>Een mislukte lookup kost geen credit.</li>
+  <li>Zonder account: 5 adressen per IP, daarna 403.</li>
+  <li>Saldo in de responseheader <code>X-Credits-Remaining</code>, of via <code>GET /Api/Credits</code>.</li>
+  <li>Bij ongebruikelijke load geldt fair use; vang <code>429</code> af met exponentiële backoff.</li>
+</ul>
+
+<div class="cta">
+  <h2>Prijzen en account</h2>
+  <p>De <a href="https://woz-api.nl/woz-api-prijs">staffels staan publiek</a>, vanaf EUR 0,35 per
+  uniek adres excl. btw. Een gratis account geeft 10 credits om de integratie af te maken.</p>
+</div>
+
+</div>
+</main>
+
+<footer class="bottom">
+  <div class="wrap">
+    Documentatie bij de WOZ API van <a href="https://woz-api.nl">woz-api.nl</a>.
+    Broncode van de clients op <a href="https://github.com/WozApi/wozapi-clients">GitHub</a>, MIT-licentie.
+  </div>
+</footer>
+</body>
+</html>

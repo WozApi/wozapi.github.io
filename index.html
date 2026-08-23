@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WOZ API: technische documentatie voor Nederlandse WOZ-waarden</title>
+<meta name="description" content="Technische documentatie van de WOZ API: WOZ-waarde, BAG-adres en kadastraal perceel van elk Nederlands adres via 1 REST-endpoint. Clients in Python, Node en .NET.">
+<link rel="canonical" href="https://wozapi.github.io/">
+<link rel="stylesheet" href="/assets/docs.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="WOZ API: technische documentatie">
+<meta property="og:description" content="WOZ-waarde, BAG-adresgegevens en kadastrale percelen van elk Nederlands adres via 1 REST-endpoint.">
+<meta property="og:url" content="https://wozapi.github.io/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","headline":"WOZ API: technische documentatie voor Nederlandse WOZ-waarden","description":"Technische documentatie van de WOZ API: WOZ-waarde, BAG-adresgegevens en kadastrale percelen van elk Nederlands adres via 1 REST-endpoint.","url":"https://wozapi.github.io/","inLanguage":"nl-NL","author":{"@type":"Organization","name":"WozApi","url":"https://woz-api.nl"},"about":{"@type":"WebAPI","name":"WOZ API","documentation":"https://wozapi.github.io/reference.html","provider":{"@type":"Organization","name":"WozApi","url":"https://woz-api.nl"}}}
+]}
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">wozapi<span aria-hidden="true">/</span>docs</a>
+    <nav aria-label="Documentatie">
+      <a href="/" aria-current="page">Overzicht</a>
+      <a href="/getting-started.html">Aan de slag</a>
+      <a href="/reference.html">Referentie</a>
+      <a href="/clients.html">Clients</a>
+      <a href="https://woz-api.nl">woz-api.nl</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<h1>WOZ API</h1>
+<p class="lead">Eén REST-endpoint dat de WOZ-waarde, de BAG-adresgegevens, het WOZ-object en de
+kadastrale percelen van een Nederlands adres teruggeeft. Deze site is de technische
+documentatie; het product, de prijzen en een account staan op
+<a href="https://woz-api.nl">woz-api.nl</a>.</p>
+
+<h2>Wat de API teruggeeft</h2>
+<p>Je stuurt een adres, je krijgt vier soorten gegevens in één JSON-respons terug. Dat is het
+verschil met de losse basisregistraties, waar je adres, waarde en perceel bij drie bronnen
+apart moet ophalen en zelf koppelen.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Veld</th><th>Wat erin zit</th></tr></thead>
+  <tbody>
+    <tr><td><code>bag</code></td><td>Gestandaardiseerd adres met BAG-identificaties (nummeraanduiding, adresseerbaar object)</td></tr>
+    <tr><td><code>wozObject</code></td><td>WOZ-objectnummer en grondoppervlakte</td></tr>
+    <tr><td><code>woz</code></td><td>Alle bekende vastgestelde waarden, met de peildatum per waarde</td></tr>
+    <tr><td><code>percelen</code></td><td>Kadastrale percelen met oppervlakte, optioneel met grenzen als GeoJSON</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Een call in drie regels</h2>
+<pre tabindex="0" role="region" aria-label="Voorbeeld met curl"><code>curl "https://woz-api.nl/Api/Adres?adres=Spuistraat%2036C,%201012TT%20Amsterdam" \
+  -H "X-Api-Key: JOUW_API_KEY"</code></pre>
+
+<p>Het antwoord, ingekort:</p>
+
+<pre tabindex="0" role="region" aria-label="Voorbeeldrespons"><code>{
+  "adres": "Spuistraat 36C, 1012TT Amsterdam",
+  "bag": {
+    "nummeraanduidingId": "0363200000418472",
+    "straatnaam": "Spuistraat",
+    "huisnummer": 36,
+    "postcode": "1012TT",
+    "woonplaatsnaam": "Amsterdam"
+  },
+  "wozObject": { "wozobjectnummer": 36300285811 },
+  "percelen": [
+    { "aanduiding": "ASD04 F 1145", "oppervlakteM2": 92 }
+  ],
+  "woz": [
+    { "peildatum": "2025-01-01", "vastgesteldeWaarde": 662000 }
+  ]
+}</code></pre>
+
+<div class="callout">
+  <strong>Let op de veldnaam.</strong> De reeks waarden heet <code>woz</code>, niet
+  <code>wozWaarden</code>. Elk element heeft <code>peildatum</code> en
+  <code>vastgesteldeWaarde</code>. Een adres heeft meestal meerdere peildata, oplopend van oud
+  naar nieuw.
+</div>
+
+<h2>Wie deze API wel en niet nodig heeft</h2>
+<p>Het is eerlijker om dat vooraf te zeggen dan achteraf.</p>
+<ul>
+  <li><strong>Wel:</strong> je bouwt software die per adres een WOZ-waarde nodig heeft, in
+    proptech, fintech, makelaardij, notariaat of belastingadvies, en je wilt geen aansluittraject.</li>
+  <li><strong>Niet:</strong> je hebt een wettelijke taak met WOZ-gegevens. Dan kun je zelf op de
+    Landelijke Voorziening WOZ aansluiten, en dat is gratis. Zie
+    <a href="https://woz-api.nl/artikelen/lv-woz-uitgelegd-wie-mag-aansluiten-en-wie-niet">wie
+    mag aansluiten op de LV WOZ</a>.</li>
+  <li><strong>Niet:</strong> je wilt alleen adressen valideren of verrijken met bouwjaar en
+    oppervlakte. Dat kan gratis via de open BAG op PDOK.</li>
+</ul>
+
+<h2>Verder</h2>
+<ul>
+  <li><a href="/getting-started.html">Aan de slag</a>: van sleutel naar eerste geslaagde call.</li>
+  <li><a href="/reference.html">Referentie</a>: alle endpoints, velden, foutcodes en limieten.</li>
+  <li><a href="/clients.html">Clients</a>: Python, Node.js en .NET, zonder afhankelijkheden.</li>
+</ul>
+
+<div class="cta">
+  <h2>Een sleutel aanvragen</h2>
+  <p>Een account op <a href="https://woz-api.nl">woz-api.nl</a> is gratis en geeft 10 credits.
+  1 credit is 1 uniek adres; hetzelfde adres binnen 7 dagen opnieuw opvragen kost geen extra
+  credit. De <a href="https://woz-api.nl/woz-api-prijs">prijzen per credit</a> staan publiek.</p>
+</div>
+
+</div>
+</main>
+
+<footer class="bottom">
+  <div class="wrap">
+    Documentatie bij de WOZ API van <a href="https://woz-api.nl">woz-api.nl</a>.
+    Broncode van de clients op <a href="https://github.com/WozApi/wozapi-clients">GitHub</a>, MIT-licentie.
+  </div>
+</footer>
+</body>
+</html>

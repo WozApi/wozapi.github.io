@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WOZ API clients voor Python, Node.js en .NET</title>
+<meta name="description" content="Clientlibraries voor de WOZ API in Python, Node.js en .NET. Zonder externe afhankelijkheden, MIT-licentie, met een werkend voorbeeld per taal.">
+<link rel="canonical" href="https://wozapi.github.io/clients.html">
+<link rel="stylesheet" href="/assets/docs.css">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WOZ API clients voor Python, Node.js en .NET">
+<meta property="og:description" content="Clientlibraries zonder externe afhankelijkheden, MIT-licentie, met een werkend voorbeeld per taal.">
+<meta property="og:url" content="https://wozapi.github.io/clients.html">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","headline":"WOZ API clients voor Python, Node.js en .NET","description":"Clientlibraries voor de WOZ API in Python, Node.js en .NET, zonder externe afhankelijkheden.","url":"https://wozapi.github.io/clients.html","inLanguage":"nl-NL","author":{"@type":"Organization","name":"WozApi","url":"https://woz-api.nl"}},
+{"@type":"SoftwareSourceCode","name":"wozapi-clients","description":"Clientlibraries voor de WOZ API van woz-api.nl in Python, Node.js en .NET.","codeRepository":"https://github.com/WozApi/wozapi-clients","programmingLanguage":["Python","JavaScript","C#"],"license":"https://opensource.org/licenses/MIT","author":{"@type":"Organization","name":"WozApi","url":"https://woz-api.nl"}}
+]}
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">wozapi<span aria-hidden="true">/</span>docs</a>
+    <nav aria-label="Documentatie">
+      <a href="/">Overzicht</a>
+      <a href="/getting-started.html">Aan de slag</a>
+      <a href="/reference.html">Referentie</a>
+      <a href="/clients.html" aria-current="page">Clients</a>
+      <a href="https://woz-api.nl">woz-api.nl</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<h1>Clients</h1>
+<p class="lead">Dunne wrappers rond hetzelfde endpoint, in drie talen. Broncode op
+<a href="https://github.com/WozApi/wozapi-clients">github.com/WozApi/wozapi-clients</a>,
+MIT-licentie.</p>
+
+<h2>Uitgangspunten</h2>
+<p>Alle drie de clients volgen dezelfde regels, zodat je bij het overstappen van taal niets
+opnieuw hoeft te leren:</p>
+<ul>
+  <li><strong>Geen externe afhankelijkheden.</strong> Alleen de standaardbibliotheek. Een
+    HTTP-wrapper hoort geen dependency-discussie te veroorzaken.</li>
+  <li><strong>Eén foutsoort per taal</strong>, met de HTTP-status en de servermelding erin.</li>
+  <li><strong>Nederlandse veldnamen blijven staan.</strong> De API geeft <code>peildatum</code>
+    en <code>vastgesteldeWaarde</code>; die vertalen zou alleen verwarring geven bij het lezen
+    van deze documentatie.</li>
+  <li><strong>Geen getypeerd responsemodel.</strong> Je krijgt de JSON zoals hij is, zodat een
+    nieuw veld in de API geen nieuwe clientversie vraagt.</li>
+</ul>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Taal</th><th>Bestand</th><th>Pakketnaam (gereserveerd)</th></tr></thead>
+  <tbody>
+    <tr><td>Python 3.9+</td><td><a href="https://github.com/WozApi/wozapi-clients/tree/main/python">python/</a></td><td><code>wozapi</code></td></tr>
+    <tr><td>Node.js 18+</td><td><a href="https://github.com/WozApi/wozapi-clients/tree/main/node">node/</a></td><td><code>wozapi</code></td></tr>
+    <tr><td>.NET 6+</td><td><a href="https://github.com/WozApi/wozapi-clients/tree/main/dotnet">dotnet/</a></td><td><code>WozApi.Client</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Python</h2>
+<pre tabindex="0" role="region" aria-label="Python-voorbeeld"><code>from wozapi import WozApi, WozApiError
+
+client = WozApi("jouw-api-key")
+
+try:
+    adres = client.adres("Spuistraat 36C, 1012 TT Amsterdam")
+    for woz in adres["woz"]:
+        print(woz["peildatum"], woz["vastgesteldeWaarde"])
+except WozApiError as fout:
+    print(fout.status, fout.bericht)</code></pre>
+
+<h2>Node.js</h2>
+<pre tabindex="0" role="region" aria-label="Node.js-voorbeeld"><code>import { WozApi, WozApiError } from 'wozapi';
+
+const client = new WozApi('jouw-api-key');
+
+try {
+  const adres = await client.adres('Spuistraat 36C, 1012 TT Amsterdam');
+  for (const woz of adres.woz) {
+    console.log(woz.peildatum, woz.vastgesteldeWaarde);
+  }
+} catch (fout) {
+  if (fout instanceof WozApiError) console.error(fout.status, fout.bericht);
+  else throw fout;
+}</code></pre>
+
+<h2>.NET</h2>
+<p>De client neemt een <code>HttpClient</code> mee in plaats van er zelf een te maken: een eigen
+<code>HttpClient</code> per instantie is de klassieke bron van socket-uitputting in langlopende
+processen. Gebruik in ASP.NET dus <code>IHttpClientFactory</code>.</p>
+<pre tabindex="0" role="region" aria-label="NET-voorbeeld"><code>using WozApi.Client;
+
+var client = new WozApiClient(httpClient, "jouw-api-key");
+
+try
+{
+    using var adres = await client.AdresAsync("Spuistraat 36C, 1012 TT Amsterdam");
+    foreach (var woz in adres.RootElement.GetProperty("woz").EnumerateArray())
+    {
+        Console.WriteLine($"{woz.GetProperty("peildatum").GetString()}: " +
+                          $"{woz.GetProperty("vastgesteldeWaarde").GetInt32()}");
+    }
+}
+catch (WozApiException fout)
+{
+    Console.Error.WriteLine($"{fout.Status}: {fout.Bericht}");
+}</code></pre>
+
+<h2>Methoden</h2>
+<p>Dezelfde vier in elke taal, met de naamgevingsconventie van die taal.</p>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Endpoint</th><th>Python</th><th>Node.js</th><th>.NET</th></tr></thead>
+  <tbody>
+    <tr><td><code>/Api/Adres</code></td><td><code>adres()</code></td><td><code>adres()</code></td><td><code>AdresAsync()</code></td></tr>
+    <tr><td><code>/Api/Nummeraanduiding/{id}</code></td><td><code>nummeraanduiding()</code></td><td><code>nummeraanduiding()</code></td><td><code>NummeraanduidingAsync()</code></td></tr>
+    <tr><td><code>/Api/AdresseerbaarObject/{id}</code></td><td><code>adresseerbaar_object()</code></td><td><code>adresseerbaarObject()</code></td><td><code>AdresseerbaarObjectAsync()</code></td></tr>
+    <tr><td><code>/Api/Credits</code></td><td><code>credits()</code></td><td><code>credits()</code></td><td><code>CreditsAsync()</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Elke methode neemt <code>geometrie</code> als optionele parameter om perceelgrenzen als
+GeoJSON mee te sturen. Standaard uit, want dat maakt de respons fors groter.</p>
+
+<div class="cta">
+  <h2>Liever geen code?</h2>
+  <p>De <a href="https://woz-api.nl/woz-waarden-in-excel">Excel-wizard</a> vult een bestand met
+  adressen in één keer aan met WOZ-waarde, peildatum en oppervlakte per rij. Zonder account en
+  zonder API-sleutel, tot 10.000 rijen per upload.</p>
+</div>
+
+</div>
+</main>
+
+<footer class="bottom">
+  <div class="wrap">
+    Documentatie bij de WOZ API van <a href="https://woz-api.nl">woz-api.nl</a>.
+    Broncode van de clients op <a href="https://github.com/WozApi/wozapi-clients">GitHub</a>, MIT-licentie.
+  </div>
+</footer>
+</body>
+</html>

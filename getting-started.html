@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aan de slag met de WOZ API: van sleutel naar eerste call</title>
+<meta name="description" content="Stap voor stap een WOZ-waarde opvragen via de API: sleutel aanmaken, eerste call met curl, respons lezen, en de veelgemaakte fouten met hun oplossing.">
+<link rel="canonical" href="https://wozapi.github.io/getting-started.html">
+<link rel="stylesheet" href="/assets/docs.css">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Aan de slag met de WOZ API">
+<meta property="og:description" content="Van sleutel naar eerste geslaagde call, met de veelgemaakte fouten en hun oplossing.">
+<meta property="og:url" content="https://wozapi.github.io/getting-started.html">
+<!-- TechArticle en bewust GEEN HowTo: Google heeft de HowTo-rich-result in september 2023
+     uitgezet, dus die markup levert niets meer op en suggereert een SERP-functie die niet
+     bestaat. Voor documentatie is TechArticle het juiste type. -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"TechArticle","headline":"Aan de slag met de WOZ API: van sleutel naar eerste call","description":"Van sleutel naar eerste geslaagde call met de WOZ API, met de veelgemaakte fouten en hun oplossing.","url":"https://wozapi.github.io/getting-started.html","inLanguage":"nl-NL","proficiencyLevel":"Beginner","author":{"@type":"Organization","name":"WozApi","url":"https://woz-api.nl"},"about":{"@type":"WebAPI","name":"WOZ API","documentation":"https://wozapi.github.io/reference.html"}}
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">wozapi<span aria-hidden="true">/</span>docs</a>
+    <nav aria-label="Documentatie">
+      <a href="/">Overzicht</a>
+      <a href="/getting-started.html" aria-current="page">Aan de slag</a>
+      <a href="/reference.html">Referentie</a>
+      <a href="/clients.html">Clients</a>
+      <a href="https://woz-api.nl">woz-api.nl</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<h1>Aan de slag</h1>
+<p class="lead">Van niets naar een WOZ-waarde in je eigen code. Reken op een paar minuten,
+waarvan het meeste het aanmaken van een account is.</p>
+
+<h2 id="sleutel">1. Een sleutel aanmaken</h2>
+<p>Maak een gratis account op <a href="https://woz-api.nl">woz-api.nl</a> en genereer een sleutel
+onder <a href="https://woz-api.nl/ApiKeys">API sleutels</a>. Je krijgt 10 credits, genoeg om de
+integratie af te maken voordat je iets betaalt.</p>
+<p>Wil je eerst zien wat je terugkrijgt zonder account, dan staat er een live demo met een echte
+respons op de <a href="https://woz-api.nl">homepage</a>, en de volledige OpenAPI-definitie in
+<a href="https://woz-api.nl/swagger">Swagger</a>.</p>
+
+<h2 id="eerste-call">2. De eerste call</h2>
+<p>De sleutel gaat mee als header. Twee vormen werken:</p>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Header</th><th>Waarde</th></tr></thead>
+  <tbody>
+    <tr><td><code>X-Api-Key</code></td><td><code>{jouw sleutel}</code></td></tr>
+    <tr><td><code>Authorization</code></td><td><code>ApiKey {jouw sleutel}</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<pre tabindex="0" role="region" aria-label="Eerste call met curl"><code>curl "https://woz-api.nl/Api/Adres?adres=Spuistraat%2036C,%201012TT%20Amsterdam" \
+  -H "X-Api-Key: JOUW_API_KEY"</code></pre>
+
+<div class="callout">
+  <strong>Url-encodeer het adres.</strong> Een adres bevat spaties en vaak een komma. Zonder
+  encoding kapt je shell of HTTP-client de parameter af bij de eerste spatie en krijg je een 400
+  terug op een adres dat gewoon bestaat.
+</div>
+
+<h2 id="respons">3. De respons lezen</h2>
+<p>De waarden staan in de reeks <code>woz</code>, met per element een <code>peildatum</code> en
+een <code>vastgesteldeWaarde</code>. Een adres heeft doorgaans meerdere peildata. Wil je de
+meest recente waarde, sorteer dan op peildatum in plaats van blind het eerste element te
+pakken: de volgorde is geen contract.</p>
+
+<pre tabindex="0" role="region" aria-label="Meest recente waarde in Python"><code>import json, urllib.parse, urllib.request
+
+url = "https://woz-api.nl/Api/Adres?" + urllib.parse.urlencode(
+    {"adres": "Spuistraat 36C, 1012TT Amsterdam"})
+verzoek = urllib.request.Request(url, headers={"X-Api-Key": "JOUW_API_KEY"})
+
+with urllib.request.urlopen(verzoek) as antwoord:
+    data = json.load(antwoord)
+
+recentste = max(data["woz"], key=lambda w: w["peildatum"])
+print(recentste["peildatum"], recentste["vastgesteldeWaarde"])</code></pre>
+
+<p>Voor Python, Node.js en .NET staat er een client die dit voor je doet, zie
+<a href="/clients.html">Clients</a>.</p>
+
+<h2>Wat er mis kan gaan</h2>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Status</th><th>Betekenis</th><th>Wat te doen</th></tr></thead>
+  <tbody>
+    <tr><td><code>400</code></td><td>Adres onleesbaar of parameter ontbreekt</td><td>Controleer de url-encoding en of <code>adres</code> is meegestuurd</td></tr>
+    <tr><td><code>401</code></td><td>Sleutel ontbreekt of is ongeldig</td><td>Header <code>X-Api-Key</code> controleren; een ingetrokken sleutel geeft ook 401</td></tr>
+    <tr><td><code>403</code></td><td>Anoniem limiet bereikt</td><td>Zonder account mag je 5 adressen per IP; maak een account aan</td></tr>
+    <tr><td><code>404</code></td><td>Geen WOZ-object bij dit adres</td><td>Kan legitiem zijn: niet elk BAG-adres heeft een WOZ-object</td></tr>
+    <tr><td><code>429</code></td><td>Te veel requests</td><td>Bouw exponentiële backoff in en verlaag je gelijktijdigheid</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Een fout heeft altijd dezelfde vorm, zodat je er één handler voor kunt schrijven:</p>
+<pre tabindex="0" role="region" aria-label="Vorm van een foutrespons"><code>{
+  "fout": "korte omschrijving",
+  "code": "machineleesbare code",
+  "status": 400,
+  "detail": "wat er precies misging",
+  "traceId": "id voor support"
+}</code></pre>
+<p>Uitzondering: een 400 door modelvalidatie komt van ASP.NET zelf en heeft de
+<code>ValidationProblemDetails</code>-vorm met een <code>errors</code>-object. Vang dus op
+status, niet op de aanwezigheid van <code>fout</code>.</p>
+
+<h2>Credits en herhaalverkeer</h2>
+<p>1 credit is 1 uniek adres. Hetzelfde adres binnen 7 dagen opnieuw opvragen kost geen extra
+credit; dat is een kortingsregel en geen cache, de request wordt echt uitgevoerd. Een mislukte
+lookup kost niets. Je saldo staat in de responseheader <code>X-Credits-Remaining</code> en is
+ook op te vragen via <code>GET /Api/Credits</code>.</p>
+
+<div class="cta">
+  <h2>Volgende stap</h2>
+  <p>De <a href="/reference.html">referentie</a> heeft alle endpoints en velden. Werk je liever
+  zonder code, dan vult de <a href="https://woz-api.nl/woz-waarden-in-excel">Excel-wizard</a> een
+  bestand met adressen in één keer aan.</p>
+</div>
+
+</div>
+</main>
+
+<footer class="bottom">
+  <div class="wrap">
+    Documentatie bij de WOZ API van <a href="https://woz-api.nl">woz-api.nl</a>.
+    Broncode van de clients op <a href="https://github.com/WozApi/wozapi-clients">GitHub</a>, MIT-licentie.
+  </div>
+</footer>
+</body>
+</html>

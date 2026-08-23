@@ -1,0 +1,19 @@
+# Documentatie mag volledig geïndexeerd worden: vindbaar zijn is de reden dat deze site bestaat.
+User-agent: *
+Allow: /
+
+# AI-crawlers expliciet toestaan. Deze site is naslag, en juist voor "hoe haal ik een WOZ-waarde
+# op in Python" is een AI-antwoord met bronvermelding een prima vindweg naar woz-api.nl.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://wozapi.github.io/sitemap.xml
