@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WOZ API OAuth-koppeling: technische referentie voor softwareleveranciers</title>
+<meta name="description" content="OAuth 2.0-referentie van de WOZ API: authorization code met PKCE, scopes, token- en revocation-endpoint, onboarding-hints en foutafhandeling voor softwareleveranciers.">
+<link rel="canonical" href="https://wozapi.github.io/oauth.html">
+<link rel="stylesheet" href="/assets/docs.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="WOZ API OAuth-koppeling: technische referentie">
+<meta property="og:description" content="Authorization code met PKCE, scopes, tokens en foutafhandeling: alles om WOZ-waarden in je eigen software aan te bieden op het account van je klant.">
+<meta property="og:url" content="https://wozapi.github.io/oauth.html">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"TechArticle","headline":"WOZ API OAuth-koppeling: technische referentie voor softwareleveranciers","description":"OAuth 2.0-referentie van de WOZ API: authorization code met PKCE, scopes, token- en revocation-endpoint, onboarding-hints en foutafhandeling.","url":"https://wozapi.github.io/oauth.html","inLanguage":"nl-NL","author":{"@type":"Organization","name":"WozApi","url":"https://woz-api.nl"},"about":{"@type":"WebAPI","name":"WOZ API","documentation":"https://wozapi.github.io/reference.html","provider":{"@type":"Organization","name":"WozApi","url":"https://woz-api.nl"}}}
+]}
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">wozapi<span aria-hidden="true">/</span>docs</a>
+    <nav aria-label="Documentatie">
+      <a href="/">Overzicht</a>
+      <a href="/getting-started.html">Aan de slag</a>
+      <a href="/reference.html">Referentie</a>
+      <a href="/oauth.html" aria-current="page">OAuth</a>
+      <a href="/clients.html">Clients</a>
+      <a href="https://woz-api.nl">woz-api.nl</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<h1>OAuth-koppeling voor softwareleveranciers</h1>
+<p class="lead">Naast de <a href="/getting-started.html">API-key</a> ondersteunt de WOZ API
+OAuth 2.0 (authorization code met PKCE). Daarmee bouw je WOZ-waarden in je eigen software in,
+terwijl elke klant een eigen WozApi-account en eigen credits gebruikt. Voor jou als
+leverancier is de koppeling gratis. Het productverhaal en de aanvraag van client-credentials
+staan op <a href="https://woz-api.nl/woz-api-koppeling">woz-api.nl/woz-api-koppeling</a>;
+deze pagina is de technische referentie.</p>
+
+<h2>Endpoints</h2>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Endpoint</th><th>Doel</th></tr></thead>
+  <tbody>
+    <tr><td><code>GET /connect/authorize</code></td><td>Autorisatie: hier stuur je de browser van je klant heen</td></tr>
+    <tr><td><code>POST /connect/token</code></td><td>Code inwisselen voor tokens, en refresh tokens vernieuwen</td></tr>
+    <tr><td><code>POST /connect/revoke</code></td><td>Een token intrekken (bijvoorbeeld bij offboarding in jouw software)</td></tr>
+    <tr><td><code>GET /.well-known/openid-configuration</code></td><td>Discovery-document voor autoconfiguratie van OAuth-libraries</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Basis-URL: <code>https://woz-api.nl</code>. Alleen de authorization code flow met PKCE
+(S256) is toegestaan, met refresh tokens via de scope <code>offline_access</code>. Redirect-URI's
+matchen exact; https is verplicht, behalve op localhost voor ontwikkelwerk.</p>
+
+<h2>Scopes</h2>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Scope</th><th>Geeft recht op</th></tr></thead>
+  <tbody>
+    <tr><td><code>woz.lookup</code></td><td>WOZ-, BAG- en perceelgegevens opvragen op de credits van de gekoppelde klant (1 credit per uniek adres; herhalen binnen 7 dagen is gratis)</td></tr>
+    <tr><td><code>account.saldo</code></td><td>Het creditsaldo van de gekoppelde klant lezen via <code>GET /Api/Credits</code></td></tr>
+    <tr><td><code>offline_access</code></td><td>Een refresh token, zodat de koppeling blijft werken zonder de klant opnieuw te vragen</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Het access token bevat geen accountgegevens van de klant: geen e-mailadres, geen naam.
+Jouw software kent zijn eigen gebruiker al; van ons krijgt hij alleen data en saldo.</p>
+
+<h2>De flow, stap voor stap</h2>
+<pre><code># 1. Stuur de browser van je klant naar het authorize-endpoint
+https://woz-api.nl/connect/authorize?client_id=JOUW_CLIENT_ID
+  &amp;response_type=code
+  &amp;redirect_uri=https://jouwsoftware.nl/wozapi/callback
+  &amp;scope=woz.lookup%20account.saldo%20offline_access
+  &amp;state=RANDOM_STATE
+  &amp;code_challenge=S256_CHALLENGE
+  &amp;code_challenge_method=S256
+  &amp;login_hint=klant@voorbeeld.nl
+  &amp;objecten=600
+
+# 2. Na inloggen of registreren en toestemming komt de browser terug:
+https://jouwsoftware.nl/wozapi/callback?code=DE_CODE&amp;state=RANDOM_STATE
+
+# 3. Wissel de code server-side in voor tokens
+curl -X POST https://woz-api.nl/connect/token \
+  -d grant_type=authorization_code \
+  -d code=DE_CODE \
+  -d redirect_uri=https://jouwsoftware.nl/wozapi/callback \
+  -d client_id=JOUW_CLIENT_ID \
+  -d client_secret=JOUW_CLIENT_SECRET \
+  -d code_verifier=DE_PKCE_VERIFIER
+
+# Antwoord:
+# { "access_token": "...", "token_type": "Bearer", "expires_in": 3600,
+#   "refresh_token": "...", "scope": "woz.lookup account.saldo offline_access" }
+
+# 4. Vraag per object de WOZ-waarde op, op de credits van je klant
+curl "https://woz-api.nl/Api/Adres?adres=Spuistraat%2036C,%201012TT%20Amsterdam" \
+  -H "Authorization: Bearer ACCESS_TOKEN"
+
+# 5. Ververs het access token wanneer het verlopen is (rotatie: je krijgt
+#    ook een NIEUW refresh token terug; bewaar altijd het laatste)
+curl -X POST https://woz-api.nl/connect/token \
+  -d grant_type=refresh_token \
+  -d refresh_token=REFRESH_TOKEN \
+  -d client_id=JOUW_CLIENT_ID \
+  -d client_secret=JOUW_CLIENT_SECRET</code></pre>
+
+<h2>Onboarding-hints</h2>
+<p>Twee optionele parameters op de authorize-URL maken de onboarding voor je klant vrijwel
+frictieloos:</p>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Parameter</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><code>login_hint</code></td><td>Het e-mailadres van je klant staat voor-ingevuld bij inloggen of registreren</td></tr>
+    <tr><td><code>objecten</code></td><td>Aantal objecten of verhuurbare eenheden. De onboarding toont dan een creditadvies ("jouw software gaf 600 objecten door; we raden 600 credits aan") met de prijs erbij. Je klant kan het advies volgen, aanpassen of overslaan.</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Registreren in de flow is passwordless: e-mailadres plus een code van 6 cijfers uit de
+mail, geen wachtwoord. Een nieuw account krijgt 10 gratis credits, dus de koppeling werkt
+direct, ook voordat er betaald is.</p>
+
+<h2>Tokens en levensduren</h2>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Token</th><th>Levensduur</th><th>Bijzonderheden</th></tr></thead>
+  <tbody>
+    <tr><td>Authorization code</td><td>enkele minuten</td><td>Eenmalig bruikbaar, PKCE verplicht</td></tr>
+    <tr><td>Access token</td><td>60 minuten</td><td>Meesturen als <code>Authorization: Bearer</code></td></tr>
+    <tr><td>Refresh token</td><td>90 dagen, glijdend</td><td>Roteert bij elk gebruik; bewaar altijd het laatst ontvangen exemplaar</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Saldo en foutafhandeling</h2>
+<ul>
+  <li>Elke geslaagde call geeft het resterende saldo van de klant terug in de header
+  <code>X-Credits-Remaining</code>; los opvragen kan met <code>GET /Api/Credits</code>
+  (scope <code>account.saldo</code>).</li>
+  <li><strong>401</strong>: access token verlopen of ingetrokken. Ververs met het refresh
+  token; faalt ook dat, laat de klant dan opnieuw koppelen.</li>
+  <li><strong>402</strong>: het saldo van de klant is op. Toon een knop naar
+  <code>https://woz-api.nl/Account/Billing</code> zodat de klant direct kan opwaarderen.</li>
+  <li><strong>403</strong> met code <code>ApiCredentialBuitenApi</code>: het token is buiten
+  <code>/Api/*</code> gebruikt; access tokens zijn geen websessie.</li>
+  <li><strong>403</strong> over een ontbrekende scope: vraag de juiste scopes aan in de
+  authorize-URL en laat de klant opnieuw koppelen.</li>
+  <li>De klant kan de koppeling zelf verbreken (Account, Koppelingen op woz-api.nl); je
+  tokens geven daarna 401. Behandel dat als "opnieuw koppelen nodig", niet als storing.</li>
+</ul>
+
+<h2>Zelf de kosten dragen?</h2>
+<p>Dat kan zonder OAuth: neem een gewoon WozApi-account met <a href="/getting-started.html">
+API-key</a> en doe de calls server-side op eigen saldo. De OAuth-koppeling is bedoeld voor
+het model waarin jouw klanten zelf afrekenen bij WozApi.</p>
+
+<div class="cta">
+  <h2>Client-credentials aanvragen</h2>
+  <p>Vraag je <code>client_id</code> en <code>client_secret</code> aan via
+  <a href="https://woz-api.nl/woz-api-koppeling">woz-api.nl/woz-api-koppeling</a>. Daar staat
+  ook een demo waarin je de hele flow doorloopt zoals jouw klant hem ervaart, inclusief
+  redirect-URI's voor localhost tijdens het bouwen.</p>
+</div>
+
+</div>
+</main>
+
+<footer class="bottom">
+  <div class="wrap">
+    Documentatie bij de WOZ API van <a href="https://woz-api.nl">woz-api.nl</a>.
+    Broncode van de clients op <a href="https://github.com/WozApi/wozapi-clients">GitHub</a>, MIT-licentie.
+  </div>
+</footer>
+</body>
+</html>
