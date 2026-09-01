@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>WozApi</title>
+  <rect width="512" height="512" rx="104" fill="#0E1420"/>
+  <path d="M112 242 256 116l144 126v166H112V242Z"
+        fill="none" stroke="#E8590C" stroke-width="48"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m232 242-50 50 50 50m48-100 50 50-50 50"
+        fill="none" stroke="#E8590C" stroke-width="42"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
