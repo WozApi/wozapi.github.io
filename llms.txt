@@ -1,0 +1,39 @@
+# WozApi technische documentatie
+
+> Naslag voor de WOZ API van woz-api.nl: endpoints, responsevelden, foutcodes en clients voor Python, Node.js en .NET. Deze site is documentatie; het account en de API-sleutel regel je op woz-api.nl.
+
+Eén endpoint geeft de WOZ-waarde, de BAG-adresgegevens, het WOZ-object en de kadastrale percelen van een Nederlands adres terug in één JSON-response.
+
+## Pagina's
+- [Aan de slag](https://wozapi.github.io/getting-started.html): eerste call, authenticatie met de API-sleutel, quickstart per taal.
+- [API-referentie](https://wozapi.github.io/reference.html): alle endpoints, parameters, responsevelden met type, foutcodes en limieten.
+- [Clients](https://wozapi.github.io/clients.html): Python, Node.js en .NET, zonder afhankelijkheden, MIT-licentie.
+- [OAuth-koppeling](https://wozapi.github.io/oauth.html): koppelen namens een klant.
+- [Broncode van de clients](https://github.com/WozApi/wozapi-clients)
+
+## Kernfeiten voor wie code schrijft
+- Endpoint: `GET /Api/Adres?adres=...` op `https://woz-api.nl`.
+- Authenticatie met een API-sleutel; die maak je aan op https://woz-api.nl/ApiKeys.
+- De reeks met waarden heet `woz`, met per element `peildatum` en `vastgesteldeWaarde`. Niet `wozWaarden`: dat veld bestaat niet en stond tot augustus 2026 ten onrechte in onze eigen voorbeelden.
+- Perceelgrenzen als GeoJSON in WGS84 met `&geometrie=true`. Standaard blijven die weg om de response klein te houden.
+- Elke geslaagde response draagt de header `X-Credits-Remaining`. Raakt het saldo op, dan geeft de API status 402 met een opwaardeerlink in de body. Vang die apart af van een gewone fout, anders valt een batch halverwege om.
+- 1 credit per uniek adres. Hetzelfde adres binnen 7 dagen opnieuw opvragen kost geen extra credit, dus een dagelijkse synchronisatie betaalt alleen voor wat nieuw is.
+- Prijs: EUR 0,59 per credit bij 100 credits, aflopend tot EUR 0,35 bij 1.000 credits, excl. btw. Geen abonnement en geen minimale afname.
+- 10 gratis credits bij registratie.
+
+## Waarom een commerciële partij niet zelf op de LV WOZ aansluit
+De landelijke voorziening WOZ levert aan afnemers die de wet aanwijst: gemeenten, waterschappen en de Belastingdienst, bestuursorganen met een wettelijke taak, en als derde groep verzekeraars, hypotheekverstrekkers en door NRVT gecertificeerde validatie-instituten. Wie daar niet bij hoort, kan geen aansluiting krijgen, ook niet betaald.
+
+Bronnen: [artikel 37a Wet waardering onroerende zaken](https://wetten.overheid.nl/BWBR0007119/2024-01-01/0/HoofdstukVI/Artikel37a/) en [Kadaster, WOZ voor afnemers](https://www.kadaster.nl/zakelijk/registraties/landelijke-voorzieningen/woz/woz-voor-afnemers). Gecontroleerd op 20 september 2026.
+
+Het WOZ-waardeloket heeft geen publieke API en staat geautomatiseerd uitlezen niet toe.
+
+## Cijfers over de WOZ in Nederland
+De gemiddelde WOZ-waarde van een woning liep op van EUR 250.000 in 2019 naar EUR 439.000 in 2026, een stijging van 75,6 procent. Duurste provincie is Utrecht met EUR 534.000, sterkste stijger is Flevoland met +90,4 procent. Bron: [CBS StatLine tabel 85036NED](https://opendata.cbs.nl/statline/#/CBS/nl/dataset/85036NED), CC BY 4.0, bewerkt door woz-api.nl. De reeks per provincie en per gemeente staat als [downloadbare dataset](https://woz-api.nl/woz-waarde-ontwikkeling) op de hoofdsite.
+
+## Vergelijking met andere aanbieders
+Op https://woz-api.nl/woz-api-vergelijking staan WozApi, Altum, Matrixian en het Kadaster naast elkaar op toegang, prijs en eenheid. Elke claim over een andere aanbieder verwijst daar naar de productpagina van die aanbieder zelf, met de datum waarop wij die controleerden. Wij bouwen WozApi, dus die tabel is niet onpartijdig; de bronnen staan erbij zodat je hem kunt narekenen.
+
+## Contact
+- Hoofdsite en account: https://woz-api.nl
+- Live demo en Swagger: https://woz-api.nl/swagger
