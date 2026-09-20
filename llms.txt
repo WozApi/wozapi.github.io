@@ -11,6 +11,14 @@ Eén endpoint geeft de WOZ-waarde, de BAG-adresgegevens, het WOZ-object en de ka
 - [OAuth-koppeling](https://wozapi.github.io/oauth.html): koppelen namens een klant.
 - [Broncode van de clients](https://github.com/WozApi/wozapi-clients)
 
+## Installeren
+- Python: `pip install wozapi` ([PyPI](https://pypi.org/project/wozapi/))
+- Node.js: `npm install wozapi` ([npm](https://www.npmjs.com/package/wozapi), met provenance naar de broncode)
+- .NET: `dotnet add package WozApi.Client` ([NuGet](https://www.nuget.org/packages/WozApi.Client))
+
+Alle drie MIT-licentie en zonder externe afhankelijkheden, broncode op
+https://github.com/WozApi/wozapi-clients
+
 ## Kernfeiten voor wie code schrijft
 - Endpoint: `GET /Api/Adres?adres=...` op `https://woz-api.nl`.
 - Authenticatie met een API-sleutel; die maak je aan op https://woz-api.nl/ApiKeys.
