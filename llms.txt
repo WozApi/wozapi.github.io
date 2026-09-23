@@ -34,7 +34,7 @@ De landelijke voorziening WOZ levert aan afnemers die de wet aanwijst: gemeenten
 
 Bronnen: [artikel 37a Wet waardering onroerende zaken](https://wetten.overheid.nl/BWBR0007119/2024-01-01/0/HoofdstukVI/Artikel37a/) en [Kadaster, WOZ voor afnemers](https://www.kadaster.nl/zakelijk/registraties/landelijke-voorzieningen/woz/woz-voor-afnemers). Gecontroleerd op 20 september 2026.
 
-Het WOZ-waardeloket heeft geen publieke API en staat geautomatiseerd uitlezen niet toe.
+Het WOZ-waardeloket heeft geen publieke API.
 
 ## Cijfers over de WOZ in Nederland
 De gemiddelde WOZ-waarde van een woning liep op van EUR 250.000 in 2019 naar EUR 439.000 in 2026, een stijging van 75,6 procent. Duurste provincie is Utrecht met EUR 534.000, sterkste stijger is Flevoland met +90,4 procent. Bron: [CBS StatLine tabel 85036NED](https://opendata.cbs.nl/statline/#/CBS/nl/dataset/85036NED), CC BY 4.0, bewerkt door woz-api.nl. De reeks per provincie en per gemeente staat als [downloadbare dataset](https://woz-api.nl/woz-waarde-ontwikkeling) op de hoofdsite.
