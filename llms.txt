@@ -32,7 +32,7 @@ https://github.com/WozApi/wozapi-clients
 ## Waarom een commerciële partij niet zelf op de LV WOZ aansluit
 De landelijke voorziening WOZ levert aan afnemers die de wet aanwijst: gemeenten, waterschappen en de Belastingdienst, bestuursorganen met een wettelijke taak, en als derde groep verzekeraars, hypotheekverstrekkers en door NRVT gecertificeerde validatie-instituten. Wie daar niet bij hoort, kan geen aansluiting krijgen, ook niet betaald.
 
-Bronnen: [artikel 37a Wet waardering onroerende zaken](https://wetten.overheid.nl/BWBR0007119/2024-01-01/0/HoofdstukVI/Artikel37a/) en [Kadaster, WOZ voor afnemers](https://www.kadaster.nl/zakelijk/registraties/landelijke-voorzieningen/woz/woz-voor-afnemers). Gecontroleerd op 20 september 2026.
+Bronnen: [artikel 37aa Wet waardering onroerende zaken](https://wetten.overheid.nl/jci1.3:c:BWBR0007119&artikel=37aa) en [Kadaster, WOZ voor afnemers](https://www.kadaster.nl/zakelijk/registraties/landelijke-voorzieningen/woz/woz-voor-afnemers). Gecontroleerd op 20 september 2026.
 
 Het WOZ-waardeloket heeft geen publieke API.
 
