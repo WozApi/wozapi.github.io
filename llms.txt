@@ -9,6 +9,7 @@ Eén endpoint geeft de WOZ-waarde, de BAG-adresgegevens, het WOZ-object en de ka
 - [API-referentie](https://wozapi.github.io/reference.html): alle endpoints, parameters, responsevelden met type, foutcodes en limieten.
 - [Clients](https://wozapi.github.io/clients.html): Python, Node.js en .NET, zonder afhankelijkheden, MIT-licentie.
 - [OAuth-koppeling](https://wozapi.github.io/oauth.html): koppelen namens een klant.
+- [WOZ-waarden in je Excel](https://woz-api.nl/woz-waarden-in-excel): zonder code een Excel- of CSV-bestand met adressen laten aanvullen, ook met de waarde van een eerder jaar per rij. Zelfde staffel als de API.
 - [Broncode van de clients](https://github.com/WozApi/wozapi-clients)
 
 ## Installeren
