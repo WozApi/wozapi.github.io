@@ -108,9 +108,11 @@ print(recentste["peildatum"], recentste["vastgesteldeWaarde"])</code></pre>
   <tbody>
     <tr><td><code>400</code></td><td>Adres onleesbaar of parameter ontbreekt</td><td>Controleer de url-encoding en of <code>adres</code> is meegestuurd</td></tr>
     <tr><td><code>401</code></td><td>Sleutel ontbreekt of is ongeldig</td><td>Header <code>X-Api-Key</code> controleren; een ingetrokken sleutel geeft ook 401</td></tr>
-    <tr><td><code>403</code></td><td>Anoniem limiet bereikt</td><td>Zonder account mag je 5 adressen per IP; maak een account aan</td></tr>
-    <tr><td><code>404</code></td><td>Geen WOZ-object bij dit adres</td><td>Kan legitiem zijn: niet elk BAG-adres heeft een WOZ-object</td></tr>
-    <tr><td><code>429</code></td><td>Te veel requests</td><td>Bouw exponentiële backoff in en verlaag je gelijktijdigheid</td></tr>
+    <tr><td><code>402</code></td><td>Credits op (code <code>InsufficientCredits</code>)</td><td>Opwaarderen; <code>detail.opwaarderen</code> geeft de link. Vang dit apart af, anders valt een batch halverwege om</td></tr>
+    <tr><td><code>401</code> <code>SleutelOntbreekt</code></td><td>Geen sleutel meegestuurd</td><td>Vraag een gratis proefsleutel aan met <code>POST /Api/Proef</code>, of maak een account aan</td></tr>
+    <tr><td><code>402</code> <code>ProefVerbruikt</code></td><td>De gratis proef is op</td><td>Geef het e-mailadres van de gebruiker (<code>POST /Api/Proef/Email</code>) of ga verder met credits</td></tr>
+    <tr><td><code>404</code></td><td>Adres niet gevonden (<code>AddressNotFound</code>) of geen woning (<code>NonResidential</code>)</td><td>Kan legitiem zijn: alleen woningen hebben een openbare WOZ-waarde</td></tr>
+    <tr><td><code>502</code> <code>503</code></td><td>Een bron achter ons hapert (<code>PdokLookupFailed</code>, <code>UpstreamUnavailable</code>)</td><td>Opnieuw proberen met een oplopende wachttijd; dit kost geen credit</td></tr>
   </tbody>
 </table>
 </div>
@@ -123,14 +125,15 @@ print(recentste["peildatum"], recentste["vastgesteldeWaarde"])</code></pre>
   "detail": "wat er precies misging",
   "traceId": "id voor support"
 }</code></pre>
-<p>Uitzondering: een 400 door modelvalidatie komt van ASP.NET zelf en heeft de
-<code>ValidationProblemDetails</code>-vorm met een <code>errors</code>-object. Vang dus op
-status, niet op de aanwezigheid van <code>fout</code>.</p>
+<p>Dat geldt ook voor een 400 door modelvalidatie; <code>detail</code> bevat dan per veld de
+meldingen. Match in code op <code>code</code>, niet op de tekst in <code>fout</code>: die tekst kan
+wijzigen, de codes niet. Alle codes staan in de <a href="/reference.html#fouten">referentie</a>.</p>
 
 <h2>Credits en herhaalverkeer</h2>
 <p>1 credit is 1 uniek adres. Hetzelfde adres binnen 7 dagen opnieuw opvragen kost geen extra
-credit; dat is een kortingsregel en geen cache, de request wordt echt uitgevoerd. Een mislukte
-lookup kost niets. Je saldo staat in de responseheader <code>X-Credits-Remaining</code> en is
+credit; dat is een kortingsregel en geen cache, de request wordt echt uitgevoerd. Een opvraging
+die op een fout eindigt kost niets; een antwoord zonder WOZ-waarden (een lege <code>woz</code>)
+telt wel als opvraging. Je saldo staat in de responseheader <code>X-Credits-Remaining</code> en is
 ook op te vragen via <code>GET /Api/Credits</code>.</p>
 
 <div class="cta">
