@@ -51,10 +51,30 @@ De gezaghebbende machineleesbare definitie is de
 daarvan.</p>
 
 <h2>Authenticatie</h2>
-<p>Elke call vraagt een sleuteI in een header. Beide vormen werken:
+<p>Elke call vraagt een sleutel in een header. Beide vormen werken:
 <code>X-Api-Key: {key}</code> of <code>Authorization: ApiKey {key}</code>. Sleutels maak je aan
 op <a href="https://woz-api.nl/ApiKeys">woz-api.nl/ApiKeys</a>.</p>
-<p>Zonder sleutel mag je 5 adressen per IP-adres opvragen, daarna volgt een 403.</p>
+<p>Zonder account vraag je een gratis proefsleutel aan met <code>POST https://woz-api.nl/Api/Proef</code>:
+5 unieke adressen, 10 met het e-mailadres van de gebruiker (<code>POST /Api/Proef/Email</code>). Zonder
+sleutel geeft de API 401 met code <code>SleutelOntbreekt</code>; een verbruikte proef geeft 402 met code
+<code>ProefVerbruikt</code>. Een sleutel hoort in een header, nooit in een URL.</p>
+
+<h2 id="lijsten">Een hele lijst</h2>
+<p><code>POST https://woz-api.nl/Api/Lijst</code> met <code>{"adressen": [...]}</code>, elk adres als
+tekst of als object met straat, huisnummer, huisletter, toevoeging, postcode en plaats. Of een Excel- of
+CSV-bestand in base64 (<code>bestand</code> en <code>bestandsnaam</code>). Daarna loopt een gratis proef
+van 5 adressen; <code>GET /Api/Lijst/{token}?wacht=20</code> wacht tot de status
+<code>wacht_op_betaling</code> is en geeft de proefrijen, de prijs voor de hele lijst en
+<code>betaling.betaalUrl</code>, de pagina waar de gebruiker zelf met iDEAL betaalt. Na betaling staan de
+rijen onder <code>links.resultaten</code> en het bestand onder <code>links.download</code>. Een lijst betaal
+je per lijst, niet met credits.</p>
+
+<h2 id="agents">AI-assistenten en MCP</h2>
+<p>Een MCP-server op <code>https://woz-api.nl/Api/Mcp</code> (Streamable HTTP; zonder inloggen, of in Claude en
+Claude Code met je eigen WozApi-account via OAuth), met tools
+voor een proef, een opvraging, een hele lijst en een betaallink. Uitleg voor agents, met de foutcodes en
+de voorgeschreven reactie: <a href="https://woz-api.nl/voor-ai-agents" rel="nofollow">woz-api.nl/voor-ai-agents</a>.
+De specificatie zelf: <code>https://woz-api.nl/openapi.json</code>.</p>
 
 <h2>Endpoints</h2>
 <div class="table-scroll">
@@ -170,7 +190,7 @@ reeks is geen contract.</p>
 </table>
 </div>
 
-<h2>Fouten</h2>
+<h2 id="fouten">Fouten</h2>
 <p>Elke fout uit de API zelf heeft deze vorm:</p>
 <div class="table-scroll">
 <table>
@@ -179,23 +199,49 @@ reeks is geen contract.</p>
     <tr><td><code>fout</code></td><td>string</td><td>Korte omschrijving</td></tr>
     <tr><td><code>code</code></td><td>string</td><td>Machineleesbare code</td></tr>
     <tr><td><code>status</code></td><td>integer</td><td>De HTTP-status</td></tr>
-    <tr><td><code>detail</code></td><td>string</td><td>Wat er precies misging</td></tr>
+    <tr><td><code>detail</code></td><td>string of object</td><td>Wat er precies misging; soms een object, bijvoorbeeld met een link om op te waarderen</td></tr>
     <tr><td><code>traceId</code></td><td>string</td><td>Vermeld dit bij support</td></tr>
   </tbody>
 </table>
 </div>
-<p>Een 400 door modelvalidatie komt van ASP.NET zelf en heeft de
-<code>ValidationProblemDetails</code>-vorm met een <code>errors</code>-object. Schrijf je
-foutafhandeling daarom op de HTTP-status en niet op de aanwezigheid van <code>fout</code>.</p>
+<p>Dat geldt ook voor een 400 door modelvalidatie; <code>detail</code> bevat dan per veld de
+meldingen. Match in code op <code>code</code>, niet op de tekst in <code>fout</code>: die tekst kan
+wijzigen, de codes niet.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Code</th><th>Status</th><th>Betekenis en wat je doet</th></tr></thead>
+  <tbody>
+    <tr><td><code>InvalidInput</code></td><td>400</td><td>Parameter ontbreekt of is onbruikbaar, bijvoorbeeld een BAG-id dat geen 16 cijfers heeft. Pas de invoer aan.</td></tr>
+    <tr><td><code>SleutelOntbreekt</code></td><td>401</td><td>Geen sleutel meegestuurd. Vraag een gratis proefsleutel aan met <code>POST /Api/Proef</code>, of gebruik de sleutel van je account.</td></tr>
+    <tr><td><code>SleutelVerlopen</code></td><td>401</td><td>De proefsleutel is verlopen of ingetrokken. Vraag een nieuwe aan.</td></tr>
+    <tr><td><code>Unauthorized</code></td><td>401</td><td>De sleutel klopt niet of is ingetrokken.</td></tr>
+    <tr><td><code>ProefVerbruikt</code></td><td>402</td><td>De gratis proef is op. Geef het e-mailadres van de gebruiker (<code>POST /Api/Proef/Email</code>) of ga verder met credits; vraag geen nieuwe proefsleutel.</td></tr>
+    <tr><td><code>InsufficientCredits</code></td><td>402</td><td>Het saldo is op. <code>detail.opwaarderen</code> geeft de pagina om op te waarderen, <code>detail.betaalUrl</code> een betaallink die de gebruiker zelf opent.</td></tr>
+    <tr><td><code>ScopeOntbreekt</code></td><td>403</td><td>Het OAuth-token mist de scope voor deze aanroep; laat de klant opnieuw koppelen.</td></tr>
+    <tr><td><code>ApiCredentialBuitenApi</code></td><td>403</td><td>Een sleutel of token werkt alleen op <code>/Api</code>, niet op een webpagina.</td></tr>
+    <tr><td><code>AddressNotFound</code></td><td>404</td><td>Dit adres bestaat niet in de basisregistratie; controleer postcode en huisnummer.</td></tr>
+    <tr><td><code>NotFound</code></td><td>404</td><td>Dit BAG-id is niet gevonden.</td></tr>
+    <tr><td><code>NonResidential</code></td><td>404</td><td>Het adres bestaat, maar is geen woning: alleen woningen hebben een openbare WOZ-waarde.</td></tr>
+    <tr><td><code>PdokSuggestFailed</code>, <code>PdokLookupFailed</code>, <code>PdokFreeFailed</code></td><td>502</td><td>Het adres opzoeken lukte tijdelijk niet. Opnieuw proberen; kost niets.</td></tr>
+    <tr><td><code>UpstreamUnavailable</code></td><td>503</td><td>De WOZ-gegevens zijn tijdelijk niet beschikbaar. Opnieuw proberen; kost niets.</td></tr>
+    <tr><td><code>TeVeelVerzoeken</code>, <code>ProefTijdelijkVol</code></td><td>429</td><td>Te veel verzoeken, of de gratis proeven zijn voor vandaag op. Wacht het aantal seconden uit <code>Retry-After</code>.</td></tr>
+    <tr><td><code>ServerError</code></td><td>500</td><td>Onverwachte fout aan onze kant. Vermeld de <code>traceId</code> bij een supportvraag.</td></tr>
+  </tbody>
+</table>
+</div>
 
 <h2>Limieten en credits</h2>
 <ul>
   <li>1 credit is 1 uniek adres. Hetzelfde adres binnen 7 dagen opnieuw opvragen is gratis; de
     request wordt wel echt uitgevoerd, het is een kortingsregel en geen cache.</li>
-  <li>Een mislukte lookup kost geen credit.</li>
-  <li>Zonder account: 5 adressen per IP, daarna 403.</li>
+  <li>Een opvraging die op een fout eindigt kost geen credit; een antwoord zonder WOZ-waarden
+    (een lege <code>woz</code>) telt wel als opvraging.</li>
+  <li>Zonder account: een gratis proefsleutel voor 5 unieke adressen via <code>POST /Api/Proef</code>.</li>
+  <li>Een lijst: hoogstens 250 adressen met een proefsleutel, 10.000 met een account.</li>
   <li>Saldo in de responseheader <code>X-Credits-Remaining</code>, of via <code>GET /Api/Credits</code>.</li>
-  <li>Bij ongebruikelijke load geldt fair use; vang <code>429</code> af met exponentiële backoff.</li>
+  <li>Bij <code>502</code> en <code>503</code> opnieuw proberen met een oplopende wachttijd,
+    bijvoorbeeld na 1, 5 en 15 seconden.</li>
 </ul>
 
 <div class="cta">

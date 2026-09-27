@@ -1,21 +1,112 @@
-/* WozApi docs, huisstijl uit docs/design/DESIGN_SYSTEM.md: inkt op koel papier, 1 accent.
+﻿/* WozApi docs, huisstijl uit docs/design/DESIGN_SYSTEM.md: inkt op koel papier, 1 accent.
    Bewust 1 klein CSS-bestand zonder build-stap: GitHub Pages serveert dit statisch, en een
    Jekyll-thema zou controle over de SEO-tags en de laadtijd kosten zonder iets toe te voegen.
    Systeemfonts omdat een webfont hier een extra render-blocking request naar een derde partij
    zou zijn voor documentatie die vooral gelezen en gescand wordt. */
-:root {
-  --paper: #F3F5F7;
-  --card: #FFFFFF;
-  --ink: #0E1420;
-  --muted: #5B6675;
+/* @tokens-begin (gegenereerd door scripts/sync-design-tokens.py, niet met de hand wijzigen) */
+:root{
+
+  /* Kleur: inkt en papier */
+  --ink: #0E1420;  /* Dominant: tekst en donkere vlakken. 18,4:1 op wit. */
+  --ink-soft: #29313D;
+  --paper: #F3F5F7;  /* Pagina-achtergrond. Effen, nooit een gradient of gloed. */
+  --surface: #FFFFFF;
+  --surface-2: #F7F9FB;
+  --surface-translucent: rgba(255, 255, 255, .88);  /* Doorschijnend --surface, alleen voor de sticky header en footer met backdrop-filter. */
   --line: #E3E7EC;
+  --line-strong: #CDD4DC;
+  --control-border: #858E9B;  /* De rand van een BEDIENBAAR element: invoerveld, select, checkbox, omlijnde knop. 3,31:1 op --surface, 3,14:1 op --surface-2 en 3,03:1 op --paper, dus op alle drie de gronden boven de 3:1 die WCAG 1.4.11 voor de begrenzing van een besturingselement vraagt. --line-strong haalt daar 1,50:1. Voor een decoratieve scheidingslijn blijft --line-strong gelden; die valt niet onder die eis en donkerder maken zou de hele site zwaarder maken. */
+  --muted: #5B6675;
+
+  /* Kleur: het accent */
   --accent: #E8590C;
-  --accent-strong: #C74A08;
+  --accent-strong: #C74A08;  /* Voor GEVULDE vlakken en randen, niet voor tekst: op wit 4,76:1, maar op --paper 4,36:1 en dus door WCAG AA. */
   --accent-weak: #FBEFE7;
-  --accent-ink: #B8420A;
-  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --accent-ink: #B8420A;  /* De tekstvariant van het accent: 5,49:1 op wit, 5,03:1 op paper, 4,87:1 op accent-weak. Accentgekleurde TEKST gaat hier altijd via. */
+  --on-accent: #FFFFFF;  /* Tekstkleur op een gevuld accentvlak, zodat knoppen geen kale hex nodig hebben. */
+
+  /* Kleur: status */
+  --ok: #0E7C57;
+  --ok-weak: #E7F4EF;  /* Tint per status. Deze zes ontbraken, en dat is waarom er tien losse Tailwind-hexen in site.css stonden. */
+  --ok-ink: #0A6044;  /* 6,7:1 op --ok-weak, 7,6:1 op wit */
+  --warn: #B5820A;  /* Vlak, rand of icoon; als lopende tekst haalt hij 3,4:1. Voor tekst --warn-ink. */
+  --warn-weak: #FAF2DC;
+  --warn-ink: #8A6308;  /* 4,9:1 op --warn-weak, 5,4:1 op wit */
+  --danger: #C0392B;
+  --danger-weak: #FBECEA;
+  --danger-ink: #A32A1E;  /* 6,3:1 op --danger-weak, 7,2:1 op wit */
+
+  /* Focus */
+  --focus: 0 0 0 3px rgba(232, 89, 12, .32);  /* De focus-visible ring. Nooit outline:none zonder deze terug te zetten. */
+
+  /* Typografie */
+  --font-body: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-head: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-display: var(--font-head);
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Typeschaal */
+  --text-12: 12px;  /* Tien stappen. Dit bestand had er 48, waaronder .7188rem en .73rem: geen schaal maar per component op het oog afgesteld. */
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-16: 16px;
+  --text-18: 18px;
+  --text-20: 20px;
+  --text-24: 24px;
+  --text-30: 30px;
+  --text-38: 38px;
+  --text-48: 48px;
+  --leading-tight: 1.1;  /* display */
+  --leading-snug: 1.3;  /* korte koppen, tabelcellen */
+  --leading-normal: 1.6;  /* lopende tekst */
+
+  /* Ruimte */
+  --space-2: 2px;
+  --space-4: 4px;  /* Schaal: 2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 72. 10, 14, 18 en 22 staan er bewust niet op. */
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-56: 56px;
+  --space-72: 72px;  /* Legacy-aliassen (nog in gebruik in oudere regels), naar tokens gemapt */
+
+  /* Radius */
+  --radius-sm: 5px;
+  --radius: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;  /* Alleen waar 14px echt bedoeld is; .btn staat sinds 20 sep 2026 op --radius. */
+  --radius-pill: 999px;  /* Elevatie: randen scheiden, schaduw alleen voor overlays */
+
+  /* Elevatie */
+  --shadow-sm: 0 1px 2px rgba(14, 20, 32, .06);
+  --shadow: 0 2px 8px rgba(14, 20, 32, .08);
+  --shadow-lg: 0 6px 20px rgba(14, 20, 32, .10);  /* Motion */
+
+  /* Beweging */
+  --ease: cubic-bezier(.2, .7, .3, 1);
+  --dur: 160ms;
+
+  /* Legacy-aliassen (nog in gebruik in oudere regels) */
+  --bg: var(--paper);
+  --bg-soft: var(--surface-2);
+  --text: var(--ink);
+  --card: var(--surface);
+  --border: var(--line);
+  --accent2: var(--accent-strong);  /* was violet; nu tonaal oranje zodat gradients niet blauw-violet zijn */
+
+  /* Alleen voor dit bestand */
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Aliassen: namen die de regels in dit bestand al gebruiken */
+  --card: var(--surface);
 }
+/* @tokens-eind */
 
 * { box-sizing: border-box; }
 
@@ -40,13 +131,13 @@ header.top .wrap { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: b
 header.top .brand {
   font-family: var(--mono);
   font-weight: 600;
-  color: var(--accent-strong);
+  color: var(--accent-ink);
   text-decoration: none;
   font-size: 16px;
 }
 header.top nav { display: flex; flex-wrap: wrap; gap: 18px; }
 header.top nav a { color: var(--muted); text-decoration: none; font-size: 15px; }
-header.top nav a:hover, header.top nav a:focus { color: var(--accent-strong); text-decoration: underline; }
+header.top nav a:hover, header.top nav a:focus { color: var(--accent-ink); text-decoration: underline; }
 header.top nav a[aria-current="page"] { color: var(--ink); font-weight: 600; }
 
 main { padding: 40px 0 64px; }
@@ -63,7 +154,7 @@ li { margin-bottom: 6px; }
 
 /* Links in lopende tekst onderstreept: het oranje haalt tegen de grijze tekst geen 3:1,
    dus kleur alleen is hier geen toegankelijk onderscheid. */
-main a { color: var(--accent-strong); text-decoration: underline; }
+main a { color: var(--accent-ink); text-decoration: underline; }
 main a:hover, main a:focus { text-decoration-thickness: 2px; }
 
 pre {
@@ -116,7 +207,7 @@ footer.bottom {
   color: var(--muted);
   font-size: 15px;
 }
-footer.bottom a { color: var(--accent-strong); }
+footer.bottom a { color: var(--accent-ink); }
 
 @media (max-width: 560px) {
   body { font-size: 16px; }
