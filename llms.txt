@@ -9,7 +9,7 @@ Eén endpoint geeft de WOZ-waarde, de BAG-adresgegevens, het WOZ-object en de ka
 - [API-referentie](https://wozapi.github.io/reference.html): alle endpoints, parameters, responsevelden met type, foutcodes en limieten.
 - [Clients](https://wozapi.github.io/clients.html): Python, Node.js en .NET, zonder afhankelijkheden, MIT-licentie.
 - [OAuth-koppeling](https://wozapi.github.io/oauth.html): koppelen namens een klant.
-- [WOZ-waarden in je Excel](https://woz-api.nl/woz-waarden-in-excel): zonder code een Excel- of CSV-bestand met adressen laten aanvullen, ook met de waarde van een eerder jaar per rij. Zelfde staffel als de API.
+- [WOZ-waarden in je Excel](https://woz-api.nl/woz-waarden-in-excel): zonder code een Excel- of CSV-bestand met adressen laten aanvullen, ook met de waarde van een eerder jaar per rij. Per adres van EUR 0,59 tot EUR 0,35 excl. btw.
 - [Broncode van de clients](https://github.com/WozApi/wozapi-clients)
 
 ## Installeren
@@ -27,7 +27,7 @@ https://github.com/WozApi/wozapi-clients
 - Perceelgrenzen als GeoJSON in WGS84 met `&geometrie=true`. Standaard blijven die weg om de response klein te houden.
 - Elke geslaagde response draagt de header `X-Credits-Remaining`. Raakt het saldo op, dan geeft de API status 402 met een opwaardeerlink in de body. Vang die apart af van een gewone fout, anders valt een batch halverwege om.
 - 1 credit per uniek adres. Hetzelfde adres binnen 7 dagen opnieuw opvragen kost geen extra credit, dus een dagelijkse synchronisatie betaalt alleen voor wat nieuw is.
-- Prijs: EUR 0,59 per credit bij 100 credits, aflopend tot EUR 0,35 bij 1.000 credits, excl. btw. Geen abonnement en geen minimale afname.
+- Prijs: EUR 0,59 per credit bij 100 credits, aflopend tot EUR 0,35 bij 1.000 credits en EUR 0,30 bij een bundel van 5.000 credits, excl. btw. Geen abonnement en geen minimale afname.
 - 10 gratis credits bij registratie.
 
 ## Waarom een commerciële partij niet zelf op de LV WOZ aansluit
