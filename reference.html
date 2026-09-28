@@ -108,6 +108,11 @@ De specificatie zelf: <code>https://woz-api.nl/openapi.json</code>.</p>
 <p><code>geometrie=true</code> voegt de perceelgrenzen als GeoJSON toe, in WGS84. Standaard staat
 dat uit, omdat het de respons fors groter maakt. Zet het alleen aan als je echt gaat tekenen.</p>
 
+<p><code>energielabel=true</code> voegt het geregistreerde energielabel uit EP-Online van RVO toe, in
+het veld <code>energielabel</code>. Standaard staat dat uit; zonder de parameter ontbreekt het veld.
+Het kost geen extra credit. Bouwjaar, oppervlakte en gebruiksdoel uit de BAG staan altijd in
+<code>bag</code>.</p>
+
 <h2>Respons</h2>
 <p>Alle drie de zoek-endpoints geven dezelfde structuur terug.</p>
 
@@ -121,6 +126,7 @@ dat uit, omdat het de respons fors groter maakt. Zet het alleen aan als je echt 
     <tr><td><code>woz</code></td><td>array</td><td>De vastgestelde waarden per peildatum</td></tr>
     <tr><td><code>percelen</code></td><td>array</td><td>Actuele percelen uit de Kadastrale Kaart</td></tr>
     <tr><td><code>kadastraleObjecten</code></td><td>array</td><td>De aanduiding waar de WOZ-registratie aan hangt</td></tr>
+    <tr><td><code>energielabel</code></td><td>object</td><td>Alleen met <code>energielabel=true</code>, zie hieronder</td></tr>
   </tbody>
 </table>
 </div>
@@ -157,6 +163,31 @@ reeks is geen contract.</p>
     <tr><td><code>huisnummer</code></td><td>integer</td></tr>
     <tr><td><code>postcode</code></td><td>string</td></tr>
     <tr><td><code>woonplaatsnaam</code></td><td>string</td></tr>
+    <tr><td><code>bouwjaar</code></td><td>integer</td></tr>
+    <tr><td><code>oppervlakte</code></td><td>integer</td></tr>
+    <tr><td><code>gebruiksdoelen</code></td><td>array</td></tr>
+    <tr><td><code>pandIds</code></td><td>array</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><code>bouwjaar</code> is het oorspronkelijke bouwjaar van het pand; ligt het verblijfsobject in
+meer panden, dan het oudste. <code>oppervlakte</code> is de gebruiksoppervlakte in m². Kent de BAG
+geen verblijfsobject, zoals bij een ligplaats, dan zijn deze velden <code>null</code>.</p>
+
+<h3><code>energielabel</code></h3>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Veld</th><th>Type</th><th>Toelichting</th></tr></thead>
+  <tbody>
+    <tr><td><code>status</code></td><td>string</td><td><code>gevonden</code>, <code>geen_label</code> of <code>niet_beschikbaar</code> (probeer het later opnieuw)</td></tr>
+    <tr><td><code>klasse</code></td><td>string</td><td>Van <code>A++++</code> tot en met <code>G</code></td></tr>
+    <tr><td><code>registratiedatum</code></td><td>string</td><td>jjjj-mm-dd</td></tr>
+    <tr><td><code>geldigTot</code></td><td>string</td><td>jjjj-mm-dd; ligt die in het verleden, dan is het label verlopen</td></tr>
+    <tr><td><code>gebouwtype</code></td><td>string</td><td>Het woningtype volgens het label</td></tr>
+    <tr><td><code>gebouwsubtype</code></td><td>string</td><td>Bij een appartement de ligging in het gebouw</td></tr>
+    <tr><td><code>vereenvoudigd</code></td><td>boolean</td><td>True bij een vereenvoudigd label, de methode van voor 2021</td></tr>
+    <tr><td><code>primaireFossieleEnergie</code></td><td>number</td><td>kWh per m² per jaar</td></tr>
   </tbody>
 </table>
 </div>
@@ -235,8 +266,8 @@ wijzigen, de codes niet.</p>
 <ul>
   <li>1 credit is 1 uniek adres. Hetzelfde adres binnen 7 dagen opnieuw opvragen is gratis; de
     request wordt wel echt uitgevoerd, het is een kortingsregel en geen cache.</li>
-  <li>Een opvraging die op een fout eindigt kost geen credit; een antwoord zonder WOZ-waarden
-    (een lege <code>woz</code>) telt wel als opvraging.</li>
+  <li>Een opvraging die op een fout eindigt kost geen credit, en een antwoord zonder WOZ-waarden
+    (een lege <code>woz</code>) ook niet.</li>
   <li>Zonder account: een gratis proefsleutel voor 5 unieke adressen via <code>POST /Api/Proef</code>.</li>
   <li>Een lijst: hoogstens 250 adressen met een proefsleutel, 10.000 met een account.</li>
   <li>Saldo in de responseheader <code>X-Credits-Remaining</code>, of via <code>GET /Api/Credits</code>.</li>

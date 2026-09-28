@@ -15,7 +15,7 @@ Als assistent kun je WozApi zelf gebruiken, zonder dat de gebruiker eerst een ac
 
 ### De gratis proef
 - Een proefsleutel geeft 5 unieke adressen, met het eigen e-mailadres van de gebruiker 10 in totaal (POST https://woz-api.nl/Api/Proef/Email, of add_trial_email). Hij is 30 dagen geldig.
-- Hetzelfde adres opnieuw en een opvraging die op een fout eindigt, kosten niets.
+- Hetzelfde adres opnieuw, een adres zonder WOZ-waarde en een opvraging die op een fout eindigt, kosten niets.
 - Een lijst heeft een eigen gratis proef van 5 adressen; die tellen bij een koop mee in de prijs.
 - Vraag per gesprek hoogstens een proefsleutel aan, en geen nieuwe als de proef op is.
 
@@ -72,6 +72,7 @@ https://github.com/WozApi/wozapi-clients
 - Authenticatie met een API-sleutel; die maak je aan op https://woz-api.nl/ApiKeys.
 - De reeks met waarden heet `woz`, met per element `peildatum` en `vastgesteldeWaarde`. Niet `wozWaarden`: dat veld bestaat niet en stond tot augustus 2026 ten onrechte in onze eigen voorbeelden.
 - Perceelgrenzen als GeoJSON in WGS84 met `&geometrie=true`. Standaard blijven die weg om de response klein te houden.
+- Bouwjaar, gebruiksoppervlakte en gebruiksdoel uit de BAG staan standaard in `bag` (`bouwjaar`, `oppervlakte`, `gebruiksdoelen`). Het energielabel uit EP-Online van RVO alleen met `&energielabel=true`, in het veld `energielabel` met `status` (`gevonden`, `geen_label` of `niet_beschikbaar`), `klasse`, `geldigTot` en `gebouwtype`. Geen extra credit.
 - Elke geslaagde response draagt de header `X-Credits-Remaining`. Raakt het saldo op, dan geeft de API status 402 met een opwaardeerlink in de body. Vang die apart af van een gewone fout, anders valt een batch halverwege om.
 - 1 credit per uniek adres. Hetzelfde adres binnen 7 dagen opnieuw opvragen kost geen extra credit, dus een dagelijkse synchronisatie betaalt alleen voor wat nieuw is.
 - Prijs: EUR 0,59 per credit bij 100 credits, aflopend tot EUR 0,35 bij 1.000 credits en EUR 0,30 bij een bundel van 5.000 credits, excl. btw. Geen abonnement en geen minimale afname.
