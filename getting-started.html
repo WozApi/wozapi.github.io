@@ -132,8 +132,8 @@ wijzigen, de codes niet. Alle codes staan in de <a href="/reference.html#fouten"
 <h2>Credits en herhaalverkeer</h2>
 <p>1 credit is 1 uniek adres. Hetzelfde adres binnen 7 dagen opnieuw opvragen kost geen extra
 credit; dat is een kortingsregel en geen cache, de request wordt echt uitgevoerd. Een opvraging
-die op een fout eindigt kost niets; een antwoord zonder WOZ-waarden (een lege <code>woz</code>)
-telt wel als opvraging. Je saldo staat in de responseheader <code>X-Credits-Remaining</code> en is
+die op een fout eindigt kost niets, en een antwoord zonder WOZ-waarden (een lege <code>woz</code>)
+ook niet. Je saldo staat in de responseheader <code>X-Credits-Remaining</code> en is
 ook op te vragen via <code>GET /Api/Credits</code>.</p>
 
 <div class="cta">
