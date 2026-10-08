@@ -123,7 +123,9 @@ Het kost geen extra credit. Bouwjaar, oppervlakte en gebruiksdoel uit de BAG sta
     <tr><td><code>adres</code></td><td>string</td><td>Het genormaliseerde adres</td></tr>
     <tr><td><code>bag</code></td><td>object</td><td>BAG-adresgegevens, zie hieronder</td></tr>
     <tr><td><code>wozObject</code></td><td>object</td><td>WOZ-objectnummer en grondoppervlakte</td></tr>
-    <tr><td><code>woz</code></td><td>array</td><td>De vastgestelde waarden per peildatum</td></tr>
+    <tr><td><code>woz</code></td><td>array</td><td>De vastgestelde waarden per peildatum; leeg als er geen openbare WOZ-waarde is</td></tr>
+    <tr><td><code>huidigeWaarde</code></td><td>object</td><td>De nieuwste waarde uit <code>woz</code>, of <code>null</code></td></tr>
+    <tr><td><code>wozStatus</code></td><td>string</td><td><code>gevonden</code>, <code>geen_woning</code> of <code>geen_waarde</code>, zie hieronder</td></tr>
     <tr><td><code>percelen</code></td><td>array</td><td>Actuele percelen uit de Kadastrale Kaart</td></tr>
     <tr><td><code>kadastraleObjecten</code></td><td>array</td><td>De aanduiding waar de WOZ-registratie aan hangt</td></tr>
     <tr><td><code>energielabel</code></td><td>object</td><td>Alleen met <code>energielabel=true</code>, zie hieronder</td></tr>
@@ -151,6 +153,28 @@ Het kost geen extra credit. Bouwjaar, oppervlakte en gebruiksdoel uit de BAG sta
 </div>
 <p>Sorteer zelf op <code>peildatum</code> als je de meest recente waarde wilt; de volgorde van de
 reeks is geen contract.</p>
+
+<h3 id="wozstatus"><code>wozStatus</code></h3>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Waarde</th><th>Betekenis</th></tr></thead>
+  <tbody>
+    <tr><td><code>gevonden</code></td><td><code>woz</code> heeft een of meer waarden</td></tr>
+    <tr><td><code>geen_woning</code></td><td>Geen waarde, en volgens de BAG heeft het pand geen woonfunctie (zie <code>bag.gebruiksdoelen</code>). Alleen van woningen is de WOZ-waarde openbaar.</td></tr>
+    <tr><td><code>geen_waarde</code></td><td>Geen waarde, terwijl de BAG een woonfunctie noemt of het gebruiksdoel niet bekend is</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout">
+  <strong>Een lege <code>woz</code> is een antwoord, geen storing.</strong> Het adres bestaat, er
+  is alleen geen openbare WOZ-waarde, bijvoorbeeld bij een kantoor, kerk of hotel. Je krijgt een
+  <code>200</code> met <code>woz: []</code> en <code>huidigeWaarde: null</code>, en het kost geen
+  credit. Opnieuw proberen verandert niets, ook niet na een pauze van seconden of minuten. Een
+  tijdelijke storing geeft
+  altijd een foutstatus (<code>502</code> of <code>503</code>), nooit een <code>200</code> met een
+  lege <code>woz</code>.
+</div>
 
 <h3><code>bag</code></h3>
 <div class="table-scroll">
@@ -251,9 +275,9 @@ wijzigen, de codes niet.</p>
     <tr><td><code>InsufficientCredits</code></td><td>402</td><td>Het saldo is op. <code>detail.opwaarderen</code> geeft de pagina om op te waarderen, <code>detail.betaalUrl</code> een betaallink die de gebruiker zelf opent.</td></tr>
     <tr><td><code>ScopeOntbreekt</code></td><td>403</td><td>Het OAuth-token mist de scope voor deze aanroep; laat de klant opnieuw koppelen.</td></tr>
     <tr><td><code>ApiCredentialBuitenApi</code></td><td>403</td><td>Een sleutel of token werkt alleen op <code>/Api</code>, niet op een webpagina.</td></tr>
-    <tr><td><code>AddressNotFound</code></td><td>404</td><td>Dit adres bestaat niet in de basisregistratie; controleer postcode en huisnummer.</td></tr>
+    <tr><td><code>AddressNotFound</code></td><td>404</td><td>Dit adres bestaat niet in de basisregistratie; controleer postcode en huisnummer. Een adres dat wel bestaat maar geen openbare WOZ-waarde heeft, geeft een <code>200</code> met een lege <code>woz</code>, zie <a href="#wozstatus"><code>wozStatus</code></a>.</td></tr>
     <tr><td><code>NotFound</code></td><td>404</td><td>Dit BAG-id is niet gevonden.</td></tr>
-    <tr><td><code>NonResidential</code></td><td>404</td><td>Het adres bestaat, maar is geen woning: alleen woningen hebben een openbare WOZ-waarde.</td></tr>
+    <tr><td><code>NonResidential</code></td><td>404</td><td>Bij dit adres hoort geen nummeraanduiding, dus ook geen WOZ-object. Zeldzaam: een gewone niet-woning, zoals een kantoor, geeft een <code>200</code> met <code>wozStatus</code> <code>geen_woning</code>.</td></tr>
     <tr><td><code>PdokSuggestFailed</code>, <code>PdokLookupFailed</code>, <code>PdokFreeFailed</code></td><td>502</td><td>Het adres opzoeken lukte tijdelijk niet. Opnieuw proberen; kost niets.</td></tr>
     <tr><td><code>UpstreamUnavailable</code></td><td>503</td><td>De WOZ-gegevens zijn tijdelijk niet beschikbaar. Opnieuw proberen; kost niets.</td></tr>
     <tr><td><code>TeVeelVerzoeken</code>, <code>ProefTijdelijkVol</code></td><td>429</td><td>Te veel verzoeken, of de gratis proeven zijn voor vandaag op. Wacht het aantal seconden uit <code>Retry-After</code>.</td></tr>
