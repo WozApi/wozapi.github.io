@@ -95,8 +95,18 @@ verzoek = urllib.request.Request(url, headers={"X-Api-Key": "JOUW_API_KEY"})
 with urllib.request.urlopen(verzoek) as antwoord:
     data = json.load(antwoord)
 
-recentste = max(data["woz"], key=lambda w: w["peildatum"])
-print(recentste["peildatum"], recentste["vastgesteldeWaarde"])</code></pre>
+if data["wozStatus"] != "gevonden":
+    print("Geen openbare WOZ-waarde:", data["wozStatus"])
+else:
+    recentste = max(data["woz"], key=lambda w: w["peildatum"])
+    print(recentste["peildatum"], recentste["vastgesteldeWaarde"])</code></pre>
+
+<p>Niet elk adres heeft een openbare WOZ-waarde: alleen van woningen is die openbaar. Bij een
+kantoor, kerk of hotel krijg je een <code>200</code> met een lege <code>woz</code> en
+<code>huidigeWaarde: null</code>, en zegt <code>wozStatus</code> waarom: <code>geen_woning</code>
+als het pand volgens de BAG geen woonfunctie heeft, anders <code>geen_waarde</code>. Dat is een
+antwoord en geen storing. Probeer het niet opnieuw, het blijft hetzelfde, en het kost geen
+credit.</p>
 
 <p>Voor Python, Node.js en .NET staat er een client die dit voor je doet, zie
 <a href="/clients.html">Clients</a>.</p>
@@ -111,7 +121,8 @@ print(recentste["peildatum"], recentste["vastgesteldeWaarde"])</code></pre>
     <tr><td><code>402</code></td><td>Credits op (code <code>InsufficientCredits</code>)</td><td>Opwaarderen; <code>detail.opwaarderen</code> geeft de link. Vang dit apart af, anders valt een batch halverwege om</td></tr>
     <tr><td><code>401</code> <code>SleutelOntbreekt</code></td><td>Geen sleutel meegestuurd</td><td>Vraag een gratis proefsleutel aan met <code>POST /Api/Proef</code>, of maak een account aan</td></tr>
     <tr><td><code>402</code> <code>ProefVerbruikt</code></td><td>De gratis proef is op</td><td>Geef het e-mailadres van de gebruiker (<code>POST /Api/Proef/Email</code>) of ga verder met credits</td></tr>
-    <tr><td><code>404</code></td><td>Adres niet gevonden (<code>AddressNotFound</code>) of geen woning (<code>NonResidential</code>)</td><td>Kan legitiem zijn: alleen woningen hebben een openbare WOZ-waarde</td></tr>
+    <tr><td><code>404</code></td><td>Adres niet gevonden (<code>AddressNotFound</code>)</td><td>Controleer huisnummer, toevoeging en postcode of plaats</td></tr>
+    <tr><td><code>200</code>, lege <code>woz</code></td><td>Het adres bestaat, maar heeft geen openbare WOZ-waarde (<code>wozStatus</code> is <code>geen_woning</code> of <code>geen_waarde</code>)</td><td>Niet opnieuw proberen; kost geen credit</td></tr>
     <tr><td><code>502</code> <code>503</code></td><td>Een bron achter ons hapert (<code>PdokLookupFailed</code>, <code>UpstreamUnavailable</code>)</td><td>Opnieuw proberen met een oplopende wachttijd; dit kost geen credit</td></tr>
   </tbody>
 </table>

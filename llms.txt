@@ -39,12 +39,12 @@ Als assistent kun je WozApi zelf gebruiken, zonder dat de gebruiker eerst een ac
 - `LijstNietKlaar`: Kijk naar status en volgendeStap; rijen en bestand komen na betaling en verwerking.
 - `LijstVerlopen`: De gebruiker vindt het bestand via de link in de bezorgmail.
 - `AddressNotFound`: Controleer het adres met de gebruiker: huisnummer, toevoeging en postcode of plaats.
-- `NonResidential`: Van dit pand is geen WOZ-waarde openbaar; alleen woningen hebben er een.
+- `NonResidential`: Bij dit adres hoort geen WOZ-object. Zeldzaam: een gewone niet-woning geeft een lege woz, zonder foutcode.
 - `UpstreamUnavailable`: Een tijdelijke storing; probeer het over een minuut opnieuw.
 
 ### Regels
 - Verzin nooit een e-mailadres, adres of WOZ-waarde. Noem alleen waarden die WozApi teruggaf.
-- Een lege lijst woz betekent dat er voor dat adres geen openbare WOZ-waarde terugkwam, vaak omdat het geen woning is. Zeg dat; schat nooit een waarde.
+- Een lege lijst woz betekent dat er voor dat adres geen openbare WOZ-waarde is, vaak omdat het geen woning is; in de REST-API zegt wozStatus waarom (geen_woning of geen_waarde). Zeg dat, vraag hetzelfde adres niet opnieuw op, en schat nooit een waarde.
 - Een WOZ-waarde bij een adres is een persoonsgegeven. Gebruik de uitkomst alleen voor de vraag van de gebruiker, alleen voor woningen, en niet om personen te beoordelen.
 - Betalen doet de gebruiker zelf, op een pagina van WozApi. Vraag nooit om betaalgegevens.
 - wozJaar is het belastingjaar van een waarde; de peildatum is 1 januari van het jaar ervoor. WOZ-jaar 2026 hoort bij peildatum 1 januari 2025.
