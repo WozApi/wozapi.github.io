@@ -113,6 +113,13 @@ het veld <code>energielabel</code>. Standaard staat dat uit; zonder de parameter
 Het kost geen extra credit. Bouwjaar, oppervlakte en gebruiksdoel uit de BAG staan altijd in
 <code>bag</code>.</p>
 
+<p><code>subsidietoets=true</code> toetst de woning aan de gemeentelijke regelingen met een WOZ-grens,
+zoals een isolatiesubsidie, in het veld <code>subsidietoets</code>: de gemeente van het adres, en per
+regeling of de woning onder de grens valt, op de peildatum die de regeling zelf noemt, met het
+bouwjaar en (met <code>energielabel=true</code>) het label. Elke gemeente is nagelezen; het overzicht
+staat op <a href="https://woz-api.nl/woz-grens-isolatiesubsidie" rel="nofollow">woz-api.nl/woz-grens-isolatiesubsidie</a>.
+Het kost geen extra credit.</p>
+
 <h2>Respons</h2>
 <p>Alle drie de zoek-endpoints geven dezelfde structuur terug.</p>
 
@@ -129,6 +136,7 @@ Het kost geen extra credit. Bouwjaar, oppervlakte en gebruiksdoel uit de BAG sta
     <tr><td><code>percelen</code></td><td>array</td><td>Actuele percelen uit de Kadastrale Kaart</td></tr>
     <tr><td><code>kadastraleObjecten</code></td><td>array</td><td>De aanduiding waar de WOZ-registratie aan hangt</td></tr>
     <tr><td><code>energielabel</code></td><td>object</td><td>Alleen met <code>energielabel=true</code>, zie hieronder</td></tr>
+    <tr><td><code>subsidietoets</code></td><td>object</td><td>Alleen met <code>subsidietoets=true</code>, zie hieronder</td></tr>
   </tbody>
 </table>
 </div>
@@ -212,6 +220,23 @@ geen verblijfsobject, zoals bij een ligplaats, dan zijn deze velden <code>null</
     <tr><td><code>gebouwsubtype</code></td><td>string</td><td>Bij een appartement de ligging in het gebouw</td></tr>
     <tr><td><code>vereenvoudigd</code></td><td>boolean</td><td>True bij een vereenvoudigd label, de methode van voor 2021</td></tr>
     <tr><td><code>primaireFossieleEnergie</code></td><td>number</td><td>kWh per m² per jaar</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3><code>subsidietoets</code></h3>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Veld</th><th>Type</th><th>Toelichting</th></tr></thead>
+  <tbody>
+    <tr><td><code>status</code></td><td>string</td><td><code>getoetst</code>, <code>geen_regeling</code> (nagelezen, geen regeling met een WOZ-grens) of <code>niet_beschikbaar</code> (de gemeente kon nu niet worden bepaald)</td></tr>
+    <tr><td><code>gemeente</code></td><td>object</td><td><code>code</code> (CBS, <code>GM0363</code>) en <code>naam</code></td></tr>
+    <tr><td><code>nagelezen</code></td><td>string</td><td>jjjj-mm-dd: wanneer we deze gemeente voor het laatst nalazen</td></tr>
+    <tr><td><code>regelingen[].uitkomst</code></td><td>string</td><td><code>onder_grens</code>, <code>boven_grens</code>, <code>peildatum_ontbreekt</code>, <code>geen_waarde</code>, <code>geen_harde_grens</code> of <code>grens_onbekend</code></td></tr>
+    <tr><td><code>regelingen[].grenzen</code></td><td>array</td><td>Per grens <code>euro</code>, <code>peildatum</code>, de <code>wozWaarde</code> op die peildatum, <code>onderGrens</code> en of hij voor iedereen geldt (<code>telt</code>)</td></tr>
+    <tr><td><code>regelingen[].voorwaarden</code></td><td>array</td><td>Wat per adres te toetsen is, zoals bouwjaar en label: <code>tekst</code>, <code>waarde</code>, <code>voldoet</code></td></tr>
+    <tr><td><code>regelingen[].nogNaTeGaan</code></td><td>array</td><td>Wat per adres niet te weten is, zoals eigenaar en bewoner of een inkomen</td></tr>
+    <tr><td><code>regelingen[].soort</code></td><td>string</td><td><code>open</code>, <code>uitnodiging</code>, <code>budget_op</code>, <code>gesloten</code>, <code>vve</code> of <code>hoger_bedrag</code></td></tr>
   </tbody>
 </table>
 </div>
