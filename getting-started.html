@@ -111,6 +111,58 @@ credit.</p>
 <p>Voor Python, Node.js en .NET staat er een client die dit voor je doet, zie
 <a href="/clients.html">Clients</a>.</p>
 
+<h2 id="lijst">4. Een lijst adressen</h2>
+<p>Een Excel of CSV met adressen vul je zonder code aan op
+<a href="https://woz-api.nl/woz-waarden-in-excel">WOZ-waarden bij een lijst adressen in Excel</a>:
+een gratis proef met 5 adressen, de prijs vooraf, en hetzelfde bestand terug. Met code, ook als een
+AI-assistent het script schrijft, doe je per adres een aanroep. Een adres zonder WOZ-waarde kost
+geen credit, en een fout ook niet.</p>
+
+<pre tabindex="0" role="region" aria-label="Een lijst adressen in Python"><code># pip install requests openpyxl
+import time
+import openpyxl
+import requests
+
+API = "https://woz-api.nl/Api/Adres"
+SLEUTEL = "woz_..."            # je API-sleutel; altijd in de header, nooit in een URL
+BESTAND = "adressen.xlsx"      # kolom A: straat en huisnummer, B: postcode, C: plaats
+
+wb = openpyxl.load_workbook(BESTAND)
+ws = wb.active
+ws.cell(row=1, column=4, value="WOZ-waarde")
+ws.cell(row=1, column=5, value="Peildatum")
+ws.cell(row=1, column=6, value="Status")
+
+s = requests.Session()
+s.headers["X-Api-Key"] = SLEUTEL
+
+for rij in range(2, ws.max_row + 1):
+    straat, postcode, plaats = (ws.cell(rij, k).value for k in (1, 2, 3))
+    if not straat or not (postcode or plaats):
+        ws.cell(rij, 6, "overgeslagen: geen adres of geen postcode en plaats")
+        continue
+    adres = f"{straat}, {postcode or ''} {plaats or ''}".strip()
+    r = s.get(API, params={"adres": adres}, timeout=30)
+    if r.status_code == 200:
+        d = r.json()
+        huidig = d.get("huidigeWaarde")
+        if huidig:
+            ws.cell(rij, 4, huidig["vastgesteldeWaarde"])
+            ws.cell(rij, 5, huidig["peildatum"])
+        ws.cell(rij, 6, d.get("wozStatus"))   # gevonden, geen_woning of geen_waarde
+    elif r.status_code == 402:
+        print("Saldo op. Opwaarderen:", r.json().get("detail", {}).get("opwaarderen"))
+        break
+    else:
+        ws.cell(rij, 6, r.json().get("code", str(r.status_code)))   # bijvoorbeeld AddressNotFound
+    time.sleep(0.2)
+
+wb.save("adressen-met-woz.xlsx")</code></pre>
+
+<p>Elke rij heeft straat en huisnummer samen in een cel nodig, plus een postcode of een plaats;
+zonder die twee nemen we de eerste treffer in het land. Hetzelfde recept staat in de
+<a href="https://woz-api.nl/docs#een-lijst-adressen">handleiding op woz-api.nl</a>.</p>
+
 <h2>Wat er mis kan gaan</h2>
 <div class="table-scroll">
 <table>
