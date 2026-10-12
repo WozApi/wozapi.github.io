@@ -304,7 +304,7 @@ wijzigen, de codes niet.</p>
     <tr><td><code>NotFound</code></td><td>404</td><td>Dit BAG-id is niet gevonden.</td></tr>
     <tr><td><code>NonResidential</code></td><td>404</td><td>Bij dit adres hoort geen nummeraanduiding, dus ook geen WOZ-object. Zeldzaam: een gewone niet-woning, zoals een kantoor, geeft een <code>200</code> met <code>wozStatus</code> <code>geen_woning</code>.</td></tr>
     <tr><td><code>PdokSuggestFailed</code>, <code>PdokLookupFailed</code>, <code>PdokFreeFailed</code></td><td>502</td><td>Het adres opzoeken lukte tijdelijk niet. Opnieuw proberen; kost niets.</td></tr>
-    <tr><td><code>UpstreamUnavailable</code></td><td>503</td><td>De WOZ-gegevens zijn tijdelijk niet beschikbaar. Opnieuw proberen; kost niets.</td></tr>
+    <tr><td><code>UpstreamUnavailable</code></td><td>503</td><td>De WOZ-gegevens zijn tijdelijk niet beschikbaar. Wacht het aantal seconden uit <code>Retry-After</code> (60) en probeer het opnieuw; kost niets.</td></tr>
     <tr><td><code>TeVeelVerzoeken</code>, <code>ProefTijdelijkVol</code></td><td>429</td><td>Te veel verzoeken, of de gratis proeven zijn voor vandaag op. Wacht het aantal seconden uit <code>Retry-After</code>.</td></tr>
     <tr><td><code>ServerError</code></td><td>500</td><td>Onverwachte fout aan onze kant. Vermeld de <code>traceId</code> bij een supportvraag.</td></tr>
   </tbody>
@@ -320,8 +320,9 @@ wijzigen, de codes niet.</p>
   <li>Zonder account: een gratis proefsleutel voor 5 unieke adressen via <code>POST /Api/Proef</code>.</li>
   <li>Een lijst: hoogstens 250 adressen met een proefsleutel, 10.000 met een account.</li>
   <li>Saldo in de responseheader <code>X-Credits-Remaining</code>, of via <code>GET /Api/Credits</code>.</li>
-  <li>Bij <code>502</code> en <code>503</code> opnieuw proberen met een oplopende wachttijd,
-    bijvoorbeeld na 1, 5 en 15 seconden.</li>
+  <li>Bij <code>502</code> en <code>503</code> opnieuw proberen: na het aantal seconden uit
+    <code>Retry-After</code> als die er staat, anders met een oplopende wachttijd, bijvoorbeeld na 1,
+    5 en 15 seconden. Sla het adres niet over.</li>
 </ul>
 
 <div class="cta">

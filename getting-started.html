@@ -136,13 +136,23 @@ ws.cell(row=1, column=6, value="Status")
 s = requests.Session()
 s.headers["X-Api-Key"] = SLEUTEL
 
+def vraag(params):
+    # Bij een storing (502, 503) of te snel (429) zegt Retry-After hoe lang je wacht. Sla het
+    # adres niet over: een storing duurt meestal minuten, en opnieuw proberen kost niets.
+    for poging in range(6):
+        r = s.get(API, params=params, timeout=30)
+        if r.status_code not in (429, 502, 503):
+            return r
+        time.sleep(int(r.headers.get("Retry-After", 10 * (poging + 1))))
+    return r
+
 for rij in range(2, ws.max_row + 1):
     straat, postcode, plaats = (ws.cell(rij, k).value for k in (1, 2, 3))
     if not straat or not (postcode or plaats):
         ws.cell(rij, 6, "overgeslagen: geen adres of geen postcode en plaats")
         continue
     adres = f"{straat}, {postcode or ''} {plaats or ''}".strip()
-    r = s.get(API, params={"adres": adres}, timeout=30)
+    r = vraag({"adres": adres})
     if r.status_code == 200:
         d = r.json()
         huidig = d.get("huidigeWaarde")
@@ -154,7 +164,7 @@ for rij in range(2, ws.max_row + 1):
         print("Saldo op. Opwaarderen:", r.json().get("detail", {}).get("opwaarderen"))
         break
     else:
-        ws.cell(rij, 6, r.json().get("code", str(r.status_code)))   # bijvoorbeeld AddressNotFound
+        ws.cell(rij, 6, r.json().get("code", str(r.status_code)))   # AddressNotFound, of na een lange storing UpstreamUnavailable: draai die rijen later opnieuw
     time.sleep(0.2)
 
 wb.save("adressen-met-woz.xlsx")</code></pre>
