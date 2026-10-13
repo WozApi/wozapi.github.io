@@ -232,10 +232,13 @@ geen verblijfsobject, zoals bij een ligplaats, dan zijn deze velden <code>null</
     <tr><td><code>status</code></td><td>string</td><td><code>getoetst</code>, <code>geen_regeling</code> (nagelezen, geen regeling met een WOZ-grens) of <code>niet_beschikbaar</code> (de gemeente kon nu niet worden bepaald)</td></tr>
     <tr><td><code>gemeente</code></td><td>object</td><td><code>code</code> (CBS, <code>GM0363</code>) en <code>naam</code></td></tr>
     <tr><td><code>nagelezen</code></td><td>string</td><td>jjjj-mm-dd: wanneer we deze gemeente voor het laatst nalazen</td></tr>
-    <tr><td><code>regelingen[].uitkomst</code></td><td>string</td><td><code>onder_grens</code>, <code>boven_grens</code>, <code>peildatum_ontbreekt</code>, <code>geen_waarde</code>, <code>geen_harde_grens</code> of <code>grens_onbekend</code></td></tr>
+    <tr><td><code>regelingen[].uitkomst</code></td><td>string</td><td><code>onder_grens</code>, <code>boven_grens</code>, <code>peildatum_ontbreekt</code>, <code>geen_waarde</code>, <code>geen_harde_grens</code>, <code>grens_onbekend</code> of <code>buiten_gebied</code> (een wijkregeling, en het adres ligt erbuiten)</td></tr>
     <tr><td><code>regelingen[].grenzen</code></td><td>array</td><td>Per grens <code>euro</code>, <code>peildatum</code>, de <code>wozWaarde</code> op die peildatum, <code>onderGrens</code> en of hij voor iedereen geldt (<code>telt</code>)</td></tr>
     <tr><td><code>regelingen[].voorwaarden</code></td><td>array</td><td>Wat per adres te toetsen is, zoals bouwjaar en label: <code>tekst</code>, <code>waarde</code>, <code>voldoet</code></td></tr>
     <tr><td><code>regelingen[].nogNaTeGaan</code></td><td>array</td><td>Wat per adres niet te weten is, zoals eigenaar en bewoner of een inkomen</td></tr>
+    <tr><td><code>regelingen[].bedragen</code></td><td>array</td><td>Het bedrag per doelgroep: <code>doelgroep</code>, <code>maxEuro</code>, <code>percentage</code> en <code>voorwaarde</code> (bijvoorbeeld een inkomensgrens)</td></tr>
+    <tr><td><code>regelingen[].gebied</code></td><td>array</td><td>Alleen bij een wijkregeling: de postcodes waar hij geldt</td></tr>
+    <tr><td><code>regelingen[].gewijzigd</code></td><td>string</td><td>jjjj-mm-dd: de laatste wijziging in grens, bedrag of status, als die is vastgelegd; alle wijzigingen ook als RSS op <code>https://woz-api.nl/woz-grens-isolatiesubsidie/wijzigingen.xml</code></td></tr>
     <tr><td><code>regelingen[].soort</code></td><td>string</td><td><code>open</code>, <code>uitnodiging</code>, <code>budget_op</code>, <code>gesloten</code>, <code>vve</code> of <code>hoger_bedrag</code></td></tr>
   </tbody>
 </table>
