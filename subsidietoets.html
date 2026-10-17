@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Subsidietoets: WOZ-grens isolatiesubsidie per adres</title>
+<meta name="description" content="Met subsidietoets=true toetst de WOZ API per adres de isolatieregeling van de gemeente: WOZ-grens op de juiste peildatum, voorwaarden, bedrag en hoe je aanvraagt.">
+<link rel="canonical" href="https://wozapi.github.io/subsidietoets.html">
+<link rel="stylesheet" href="/assets/docs.css">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#E8590C">
+<meta name="theme-color" content="#0E1420">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Subsidietoets: de WOZ-grens van de isolatiesubsidie per adres">
+<meta property="og:description" content="Per adres de isolatieregeling van de gemeente getoetst, op de peildatum die de regeling noemt.">
+<meta property="og:url" content="https://wozapi.github.io/subsidietoets.html">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"TechArticle","headline":"Subsidietoets: de WOZ-grens van de isolatiesubsidie per adres","description":"Met subsidietoets=true toetst de WOZ API per adres de isolatieregeling van de gemeente: WOZ-grens op de juiste peildatum, voorwaarden, bedrag en hoe je aanvraagt.","url":"https://wozapi.github.io/subsidietoets.html","inLanguage":"nl-NL","proficiencyLevel":"Beginner","author":{"@type":"Organization","name":"Wozapi","url":"https://woz-api.nl"},"about":{"@type":"WebAPI","name":"WOZ API","documentation":"https://wozapi.github.io/reference.html"},"mentions":{"@type":"WebApplication","name":"Subsidiecheck.app","url":"https://subsidiecheck.app/"}}
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/"><svg class="brand-dakje" viewBox="5.5 19.5 89 63" aria-hidden="true" focusable="false"><path d="M12 26 31 76M69 76 88 26" fill="none" stroke="var(--ink)" stroke-width="13" stroke-linecap="round"/><path d="M31 76 50 36 69 76" fill="none" stroke="var(--accent)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>wozapi<span aria-hidden="true">/</span>docs</a>
+    <nav aria-label="Documentatie">
+      <a href="/">Overzicht</a>
+      <a href="/getting-started.html">Aan de slag</a>
+      <a href="/reference.html">Referentie</a>
+      <a href="/oauth.html">OAuth</a>
+      <a href="/clients.html">Clients</a>
+      <a href="https://woz-api.nl/swagger">Live testen</a>
+      <a href="https://woz-api.nl">woz-api.nl</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+<h1>De subsidietoets: per adres de WOZ-grens van de isolatiesubsidie</h1>
+<p class="lead">Bijna elke gemeente heeft een isolatieregeling met een WOZ-grens, elk met een eigen bedrag en een
+eigen peildatum. Met <code>subsidietoets=true</code> zoekt de API de gemeente van het adres, haar regelingen, en
+toetst per regeling of de woning onder de grens valt op de peildatum die die regeling noemt. Alle 342 gemeenten,
+elke week gecontroleerd. De toets kost geen extra credit.</p>
+
+<h2>Een call</h2>
+<pre tabindex="0" role="region" aria-label="Voorbeeld met curl"><code>curl "https://woz-api.nl/Api/Adres?adres=Voorbeeldstraat%2012,%205000ZZ%20Tilburg&amp;subsidietoets=true&amp;energielabel=true" \
+  -H "X-Api-Key: JOUW_API_KEY"</code></pre>
+<p>Hetzelfde werkt op <code>/Api/Nummeraanduiding</code> en <code>/Api/AdresseerbaarObject</code>. Met
+<code>energielabel=true</code> komt het label erbij, zodat ook een eis aan het label wordt getoetst.</p>
+
+<p>Het antwoord, ingekort (verzonnen adres, echte regeling):</p>
+<pre tabindex="0" role="region" aria-label="Voorbeeldrespons"><code>{
+  "bag": { "bouwjaar": 1968, "oppervlakte": 112, "gebruiksdoelen": ["woonfunctie"] },
+  "energielabel": { "status": "gevonden", "klasse": "E" },
+  "subsidietoets": {
+    "status": "getoetst",
+    "gemeente": { "code": "GM0855", "naam": "Tilburg" },
+    "regelingen": [
+      {
+        "naam": "Subsidieregeling lokale aanpak isolatie Tilburg 2026-2028",
+        "hoofd": true,
+        "uitkomst": "onder_grens",
+        "grenzen": [
+          { "euro": 477000, "peildatum": "2022-01-01", "onderGrens": true, "telt": true }
+        ],
+        "voorwaarden": [
+          { "tekst": "Energielabel D tot en met G, of zonder label twee slecht geïsoleerde bouwdelen", "waarde": "label E", "voldoet": true }
+        ],
+        "nogNaTeGaan": ["Koopwoning", "Eigenaar en bewoner"],
+        "bedrag": "tot € 2.250",
+        "status": "Open",
+        "aanvragen": { "moment": "achteraf", "citaat": "De aanvraag wordt ingediend na afloop van de werkzaamheden." },
+        "maatregelen": { "betaalt": ["dak", "spouwmuur", "gevel", "vloer", "glas"] }
+      }
+    ]
+  }
+}</code></pre>
+
+<h2>De velden</h2>
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Veld</th><th>Wat erin zit</th></tr></thead>
+  <tbody>
+    <tr><td><code>status</code></td><td><code>getoetst</code>, <code>geen_regeling</code> (de gemeente heeft geen regeling met een WOZ-grens) of <code>niet_beschikbaar</code></td></tr>
+    <tr><td><code>gemeente</code></td><td>De gemeente van het adres, met de CBS-code</td></tr>
+    <tr><td><code>regelingen[].uitkomst</code></td><td><code>onder_grens</code>, <code>boven_grens</code>, <code>geen_waarde</code> (geen WOZ-waarde bekend), <code>peildatum_ontbreekt</code>, <code>geen_harde_grens</code>, <code>grens_onbekend</code> of <code>buiten_gebied</code> (de regeling geldt alleen in een wijk of postcode)</td></tr>
+    <tr><td><code>grenzen</code></td><td>Per grens het bedrag, de peildatum die telt, en of de woning eronder valt</td></tr>
+    <tr><td><code>voorwaarden</code></td><td>Wat aan het adres te toetsen is, zoals bouwjaar en energielabel, met <code>voldoet</code></td></tr>
+    <tr><td><code>nogNaTeGaan</code></td><td>Wat de toets niet kan weten, zoals eigenaarschap of inkomen: dat krijgt nooit een oordeel</td></tr>
+    <tr><td><code>aanvragen.moment</code></td><td><code>vooraf</code>, <code>achteraf</code>, <code>beide</code> of <code>onbekend</code>, met een citaat uit de regeling en de bron</td></tr>
+    <tr><td><code>maatregelen.betaalt</code></td><td>Welke isolatie de regeling betaalt: <code>dak</code>, <code>spouwmuur</code>, <code>gevel</code>, <code>vloer</code>, <code>glas</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout">
+  <strong>Een voorselectie, geen toezegging.</strong> De toets oordeelt over wat aan het adres te zien is: de
+  WOZ-waarde op de peildatum, het bouwjaar en met <code>energielabel=true</code> het label. Over de aanvraag
+  beslist de gemeente, en wat de toets niet ziet, staat in <code>nogNaTeGaan</code>.
+</div>
+
+<h2>Voor bewoners: Subsidiecheck.app</h2>
+<p>Wil iemand alleen voor het eigen huis weten of het onder de grens valt, dan is de API niet nodig. Op
+<a href="https://subsidiecheck.app/">Subsidiecheck.app</a>, van dezelfde makers, vult een bewoner postcode en
+huisnummer in en ziet gratis en zonder account wat de regeling van de gemeente betaalt, en wat er van het Rijk bij
+komt. De regeling van elke gemeente staat er ook als pagina, zoals
+<a href="https://subsidiecheck.app/tilburg">Tilburg</a>.</p>
+
+<div class="cta">
+  <h2>Verder</h2>
+  <p>Alle velden en foutcodes staan in de <a href="/reference.html">referentie</a>. Een kant-en-klaar recept voor een
+  lijst adressen of een offerteformulier staat op
+  <a href="https://woz-api.nl/woz-api-subsidiecheck">woz-api.nl/woz-api-subsidiecheck</a>.</p>
+</div>
+
+</div>
+</main>
+
+<footer class="bottom">
+  <div class="wrap">
+    Documentatie bij de WOZ API van <a href="https://woz-api.nl">woz-api.nl</a>.
+    Broncode van de clients op <a href="https://github.com/WozApi/wozapi-clients">GitHub</a>, MIT-licentie.
+  </div>
+</footer>
+</body>
+</html>
